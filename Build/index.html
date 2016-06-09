@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Validation Module</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<table>
+    <tr>
+        <td class="align-top"><label for="name">Name:</label></td>
+        <td><input type="text" id="name"/></td>
+    </tr>
+    <tr>
+        <td class="align-top"><label for="age">Age:</label></td>
+        <td><input type="text" id="age"/></td>
+    </tr>
+    <tr>
+        <td class="align-top"><label for="car">Car:</label></td>
+        <td>
+            <select id="car">
+                <option value="blank">Select a car:</option>
+                <option value="saab">Saab</option>
+                <option value="mercedes">Mercedes</option>
+                <option value="audi">Audi</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td><button id="submit_button">Submit</button></td>
+    </tr>
+</table>
+
+<div id="status">
+    OUTPUT:
+    <hr/>
+    <div id="error"></div>
+    <div id="success"></div>
+</div>
+<script src="js/dom.helper.js"></script>
+<script src="js/validationFn.js"></script>
+<script src="js/validateManager.js"></script>
+<script src="js/scripts.js"></script>
+</body>
+</html>

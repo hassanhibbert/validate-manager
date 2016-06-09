@@ -1,0 +1,24 @@
+#error {
+    color: red;
+}
+
+#success {
+    color: green
+}
+
+#status {
+    background-color: white;
+    padding: 15px;
+}
+
+.error-highlight {
+    border: 1px solid red;
+}
+.error-message {
+    color: red;
+}
+.error-hide {
+    display: none;
+}
+
+td.align-top {vertical-align: top;}
