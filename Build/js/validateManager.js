@@ -79,8 +79,8 @@ var validateManager = (function() {
     function onSubmitHandler(evt) {
         evt.preventDefault();
 
-        populateValues(function() {
-            options.successCallback(formData.successValues);
+        populateValues(function(successValues) {
+            options.successCallback(successValues);
             submitButton.disabled = true;
         });
     }
@@ -105,11 +105,11 @@ var validateManager = (function() {
         updateSubmitButton();
     }
 
-    // Get the selector string from the object. Replace selector with actual DOM element
+    // Replace the input selector with an actual DOM element
     function mergeInputElements(obj) {
         uniqueId.createNewId();
-        var inputs = helperFn.getElementList(obj.input)[0];
-        extendDefaults(obj, {input: inputs, id: uniqueId.get()});
+        var inputElement = helperFn.getElementList(obj.input)[0];
+        extendDefaults(obj, {input: inputElement, id: uniqueId.get()});
     }
 
     // extends an object with new properties
@@ -153,14 +153,13 @@ var validateManager = (function() {
         formData.collection.forEach(function(inputObject) {
             if (currentInputId != inputObject.input.id) {
                 formData.successValues.push({
-                    input: inputObject.input,
-                    value: inputObject.input.value,
-                    id: inputObject.id
+                    id: inputObject.input.id,
+                    value: inputObject.input.value
                 });
                 currentInputId = inputObject.input.id;
             }
         });
-        callback();
+        callback(formData.successValues);
     }
 
     // Returns an array of validation objects that matches the input id provided
