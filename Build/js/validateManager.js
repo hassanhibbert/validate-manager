@@ -4,13 +4,16 @@ var validateManager = (function() {
         errorMessageDiv,
         formElement,
         submitButton,
-
-        tabOnce = helperFn.oncePerItem(),
+        internalValidationMethods = {},
+        helperFn = {},
+        tabOnce,
 
         // Default options
         defaults = {
             formId: null,
-            successCallback: null
+            successCallback: null,
+            resetFormOnSubmit: true,
+            validateOnKeyUp: false
         },
 
         // get/set unique id
@@ -33,7 +36,9 @@ var validateManager = (function() {
 
         publicAPI = {
             config: config,
-            init: init
+            init: init,
+            fn: internalValidationMethods,
+            helperFn: helperFn
         };
 
     return publicAPI;
@@ -54,7 +59,10 @@ var validateManager = (function() {
         submitButton = helperFn.getElementList(options.submitButton)[0];
 
         // Event listeners to handle form validation
-        formElement.addEventListener('keyup', onKeyUpHandler, false);
+        if (options.validateOnKeyUp) {
+            tabOnce = helperFn.oncePerItem();
+            formElement.addEventListener('keyup', onKeyUpHandler, false);
+        }
         formElement.addEventListener('change', onChangeHandler, false);
         formElement.addEventListener('submit', onSubmitHandler, false);
         submitButton.disabled = true;
@@ -82,6 +90,10 @@ var validateManager = (function() {
         populateValues(function(successValues) {
             options.successCallback(successValues);
             submitButton.disabled = true;
+            formData.successValues = [];
+            if (options.resetFormOnSubmit) {
+                formElement.reset();
+            }
         });
     }
 

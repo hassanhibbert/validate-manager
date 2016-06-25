@@ -7,29 +7,36 @@ validateManager.config([
     {
         input: '#name',
         multiValidation: [
-            { validateFn: inputValidate.hasValue, error: 'Please fill in your name' },
-            { validateFn: inputValidate.isAlpha, error: 'Please do not use special characters or numbers' }
+            { 
+                validateFn: validateManager.fn.hasValue, 
+                error: 'Please fill in your name' 
+            },
+            { 
+                validateFn: validateManager.fn.isAlpha, 
+                error: 'Please do not use special characters or numbers' 
+            }
         ],
         required: true
     },
     {
-        validateFn: inputValidate.isNumber,
+        validateFn: validateManager.fn.isNumber,
         input: '#age',
         error: 'Age has to be a number'
     },
     {
-        validateFn: inputValidate.hasValue,
+        validateFn: validateManager.fn.hasValue,
         input: '#car',
         error: 'Please select a car',
         required: true
-
     }
 ]);
+
 
 validateManager.init({
     formId: '#myForm',
     submitButton: '#submit_button',
-    successCallback: processForm
+    successCallback: processForm,
+    validateOnKeyUp: true
 });
 
 function processForm(data) {

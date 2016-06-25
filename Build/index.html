@@ -6,10 +6,12 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+<h3>Validate Manager - Demo</h3>
+<p>(*) Required Fields.</p>
 <form id="myForm">
     <table>
         <tr>
-            <td class="align-top"><label for="name">Name:</label></td>
+            <td class="align-top"><label for="name">Name:*</label></td>
             <td><input type="text" id="name"/></td>
         </tr>
         <tr>
@@ -17,13 +19,14 @@
             <td><input type="text" id="age"/></td>
         </tr>
         <tr>
-            <td class="align-top"><label for="car">Car:</label></td>
+            <td class="align-top"><label for="car">Car:*</label></td>
             <td>
                 <select id="car">
                     <option value="">Select a car:</option>
                     <option value="saab">Saab</option>
                     <option value="mercedes">Mercedes</option>
                     <option value="audi">Audi</option>
+                    <option value="toyota">Toyota</option>
                 </select>
             </td>
         </tr>
@@ -41,9 +44,9 @@
     <div id="error"></div>
     <div id="success"></div>
 </div>
-<script src="js/dom.helper.js"></script>
-<script src="js/validationFn.js"></script>
 <script src="js/validateManager.js"></script>
+<script src="js/validateManager.scripts.js"></script>
+<script src="js/validateManager.helperFn.js"></script>
 <script src="js/scripts.js"></script>
 </body>
 </html>
