@@ -59,31 +59,29 @@ helperFn.getElementList = function (elements) {
 };
 
 // create DOM elements with attributes and content on-the-fly
-helperFn.createNode = function (element, hasElement) {
-    if (hasElement === false) {
-        return '';
-    }
+helperFn.createNode = function (element) {
+
     var elemType = element.type,
         attributes = element.attr,
         innerContent = element.content,
-        isString = function(element) {
-            return (typeof element === 'string');
-        },
         el = document.createElement(elemType);
+
     if (attributes) {
         Object.keys(attributes).forEach(function(attrName) {
             el.setAttribute(attrName, attributes[attrName]);
         });
     }
+
     if (innerContent) {
         innerContent.forEach(function(element) {
-            if (isString(element)) {
+            if (typeof element === 'string') {
                 el.appendChild(document.createTextNode(element));
             } else {
                 el.appendChild(element);
             }
         });
     }
+
     return el;
 };
 
@@ -115,14 +113,46 @@ helperFn.removeElement = function(selector) {
         });
 };
 
+/*
 helperFn.once = function(callback) {
     if (typeof helperFn.once === 'function') {
         callback();
     } else {
-        console.log('not a function')
+        console.log('not a function');
     }
     helperFn.once = null;
 };
+*/
+
+helperFn.once = function() {
+    var arr = [];
+    return function(callback, id) {
+        if (arr.indexOf(id) < 0) {
+            arr.push(id);
+            callback();
+        }
+    }
+};
+
+helperFn.oncePerItem = function() {
+    var arr = [];
+    return function(id) {
+        if (arr.indexOf(id) < 0) {
+            arr.push(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
+
+helperFn.hasValue = function(value) {
+    return !(value.length === 0 || value.trim() == "" || value == null);
+};
+
+
+
+
 
 
 

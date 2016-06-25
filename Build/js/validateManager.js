@@ -1,97 +1,246 @@
-/**
- * Created by Hassan on 6/6/2016.
- */
-
-
 var validateManager = (function() {
 
-    var validationStatus,
+    var options,
+        errorMessageDiv,
+        formElement,
+        submitButton,
 
-        // module API
-        publicAPI,
+        tabOnce = helperFn.oncePerItem(),
 
-        // error handling options
-        errorHandling = {
-            singleDiv: null,
-            highlightInput: true,
-            insertAfter: true
+        // Default options
+        defaults = {
+            formId: null,
+            successCallback: null
         },
 
-        // collection of form values
-        formValues = [];
+        // get/set unique id
+        uniqueId = {
+            id: 0,
+            get: function() {
+                return this.id;
+            },
+            createNewId: function() {
+                this.id += 1;
+            }
+        },
 
-    publicAPI = {
-        validate: validate,
-        config: config
-    };
+        // Collection of form values
+        formData = {
+            successValues: [],
+            collection: [],
+            errorMessage: []
+        },
+
+        publicAPI = {
+            config: config,
+            init: init
+        };
 
     return publicAPI;
 
-    /**
-     * Configure error options
-     * @param obj
-     *
-     * Example:
-     * validateManager.config({
-     *     highlightInput: true,
-     *     insertAfter: true,
-     *     singleErrorDiv: document.getElementById('error')
-     * });
-     *
-     */
-    function config(obj) {
-        errorHandling.singleDiv = obj.error.singleErrorDiv;
-        errorHandling.highlightInput = obj.error.highlightInput;
-        errorHandling.insertAfter = obj.error.insertAfterInput;
+    //::::::::::::::::::::::::::::::://
+    //:::: Initialize and config :::://
+    //::::::::::::::::::::::::::::::://
+
+    function init(obj) {
+
+        // Extend defaults and assign it to options
+        if (obj && typeof obj === "object") {
+            options = extendDefaults(defaults, obj);
+        }
+
+        // Get form DOM elements
+        formElement = helperFn.getElementList(options.formId)[0];
+        submitButton = helperFn.getElementList(options.submitButton)[0];
+
+        // Event listeners to handle form validation
+        formElement.addEventListener('keyup', onKeyUpHandler, false);
+        formElement.addEventListener('change', onChangeHandler, false);
+        formElement.addEventListener('submit', onSubmitHandler, false);
+        submitButton.disabled = true;
     }
 
-    function validate(inputFields, callback) {
-        errorHandling.messages = [];
-        
-        if (errorHandling.singleDiv) {
-            errorHandling.singleDiv.innerHTML = '';
-        }
-
-        validationStatus = true;
-
-        if (helperFn.exists('.error-message')) {
-            helperFn.removeElement('.error-message');
-        }
-
-        inputFields.forEach(function(obj) {
-            if (obj.validateFn(obj.input.value)) {
-                helperFn.removeClass(obj.input, 'error-highlight');
-                formValues.push({input: obj.input, value: obj.input.value});
+    // Updates the 'formData.collection' array with validation objects
+    function config(data) {
+        data.forEach(function(obj) {
+            if (obj.multiValidation) {
+                createMultiValidationObjects(obj);
             } else {
-                errorHandling.messages.push(obj.error);
-                validationStatus = false;
-
-                if(errorHandling.insertAfter) {
-                    errorHandling.multiDiv = helperFn.createNode({
-                        type: 'div',
-                        attr: {'class': 'error-message'},
-                        content: [obj.error]
-                    });
-                    helperFn.insertAfter(errorHandling.multiDiv, obj.input);
-                }
-
-                if (errorHandling.highlightInput) {
-                    helperFn.addClass(obj.input, 'error-highlight');
-                }
+                formData.collection.push(obj);
             }
         });
+        formData.collection.forEach(mergeInputElements);
+    }
 
-        if (validationStatus) {
-            callback(formValues);
-        } else {
-            if (errorHandling.singleDiv) {
-                errorHandling.singleDiv.innerHTML = errorHandling.messages[0];
+    //:::::::::::::::::::::::://
+    //:::: Event Handlers :::://
+    //:::::::::::::::::::::::://
+
+    function onSubmitHandler(evt) {
+        evt.preventDefault();
+
+        populateValues(function() {
+            options.successCallback(formData.successValues);
+            submitButton.disabled = true;
+        });
+    }
+
+    function onKeyUpHandler(evt) {
+        evt.preventDefault();
+        var keyCode = evt.keyCode || evt.which;
+
+        // skip validation on initial tab key press for each form field
+        if (tabOnce(evt.target.id) && keyCode === 9) {
+            return;
+        }
+
+        validateCurrentInput(evt.target.id);
+        updateSubmitButton();
+    }
+
+
+    function onChangeHandler(evt) {
+        evt.preventDefault();
+        validateCurrentInput(evt.target.id);
+        updateSubmitButton();
+    }
+
+    // Get the selector string from the object. Replace selector with actual DOM element
+    function mergeInputElements(obj) {
+        uniqueId.createNewId();
+        var inputs = helperFn.getElementList(obj.input)[0];
+        extendDefaults(obj, {input: inputs, id: uniqueId.get()});
+    }
+
+    // extends an object with new properties
+    function extendDefaults(source, properties) {
+        var property;
+        for (property in properties) {
+            if (properties.hasOwnProperty(property)) {
+                source[property] = properties[property];
             }
-            formValues = [];
+        }
+        return source;
+    }
+
+    // returns an array of objects that's required
+    function getRequiredFields() {
+        return formData.collection.filter(function(inputObject) {
+            return (inputObject.required);
+        });
+    }
+
+    // returns an array of required objects that has been filled out
+    function getRequiredFieldsCompleted() {
+        return getRequiredFields().filter(function(inputObject) {
+            return (helperFn.hasValue(inputObject.input.value));
+        });
+    }
+
+    // verify if required fields are filled out
+    function isRequiredFieldsCompleted() {
+        return (getRequiredFieldsCompleted().length === getRequiredFields().length);
+    }
+
+    // Enable submit button if required fields are filled out and there are no errors.
+    function updateSubmitButton() {
+        submitButton.disabled = (isRequiredFieldsCompleted() && formData.errorMessage.length === 0) ? false : true;
+    }
+
+    // Populate 'formData.successValues' with input values that has been validated then invoke the callback function
+    function populateValues(callback) {
+        var currentInputId = '';
+        formData.collection.forEach(function(inputObject) {
+            if (currentInputId != inputObject.input.id) {
+                formData.successValues.push({
+                    input: inputObject.input,
+                    value: inputObject.input.value,
+                    id: inputObject.id
+                });
+                currentInputId = inputObject.input.id;
+            }
+        });
+        callback();
+    }
+
+    // Returns an array of validation objects that matches the input id provided
+    function inputLookUp(id) {
+        return formData.collection.filter(function(obj) {
+            return (obj.input.id == id);
+        });
+    }
+
+    // Validates the current input that matches the provided id
+    function validateCurrentInput(id) {
+        var inputObj = inputLookUp(id);
+        if (inputObj.length > 1) {
+            inputObj.forEach(function(currInputObj) {
+                validateInput(currInputObj);
+            });
+        } else {
+            validateInput(inputObj[0]);
         }
     }
 
+    // Validation objects with 'multiValidation' property will be pushed to the 'formData.collection' array separately
+    function createMultiValidationObjects(obj) {
+        obj.multiValidation.forEach(function(inputObj) {
+            if (obj.required) {
+                formData.collection.push({
+                    input: obj.input,
+                    validateFn: inputObj.validateFn,
+                    error: inputObj.error,
+                    required: obj.required
+                });
+            } else {
+                formData.collection.push({
+                    input: obj.input,
+                    validateFn: inputObj.validateFn,
+                    error: inputObj.error
+                });
+            }
+
+        });
+    }
+
+    // validates the input field
+    function validateInput(obj) {
+        if (obj.validateFn(obj.input.value)) {
+            hideErrorMessage(obj);
+        } else {
+            insertErrorMessage(obj);
+        }
+    }
+
+    function hideErrorMessage(obj) {
+        if (formData.errorMessage.indexOf(obj.error) >= 0) {
+            formData.errorMessage = formData.errorMessage.filter(function(errorMessage) {
+                return errorMessage != obj.error;
+            });
+            document.querySelector('#error-mgn-' + obj.id).style.display = 'none';
+            helperFn.removeClass(obj.input, 'error-highlight');
+        } else {
+            if (helperFn.exists('#error-mgn-' + obj.id)) {
+                document.querySelector('#error-mgn-' + obj.id).style.display = 'none';
+                helperFn.removeClass(obj.input, 'error-highlight');
+            }
+        }
+    }
+
+    function insertErrorMessage(obj) {
+        if (formData.errorMessage.indexOf(obj.error) < 0 && !helperFn.exists('#error-mgn-' + obj.id)) {
+            formData.errorMessage.push(obj.error);
+
+            errorMessageDiv = helperFn.createNode({
+                type: 'div',
+                attr: {'class': 'error-message', 'id': 'error-mgn-' + obj.id},
+                content: [obj.error]
+            });
+
+            helperFn.insertAfter(errorMessageDiv, obj.input);
+            helperFn.addClass(obj.input, 'error-highlight');
+        } else {
+            document.querySelector('#error-mgn-' + obj.id).style.display = 'block';
+        }
+    }
 })();
-
-
-
