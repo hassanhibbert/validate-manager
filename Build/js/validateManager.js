@@ -61,9 +61,13 @@ var validateManager = (function() {
             tabOnce = helperFn.oncePerItem();
             formElement.addEventListener('keyup', onKeyUpHandler, false);
         }
+
         formElement.addEventListener('change', onChangeHandler, false);
         formElement.addEventListener('submit', onSubmitHandler, false);
         submitButton.disabled = true;
+
+        formData.collection.forEach(mergeInputElements);
+        formData.collection.forEach(createErrorPlaceholders);
     }
 
     // Updates the 'formData.collection' array with validation objects
@@ -75,8 +79,6 @@ var validateManager = (function() {
                 formData.collection.push(obj);
             }
         });
-        formData.collection.forEach(mergeInputElements);
-        formData.collection.forEach(createErrorPlaceholders);
     }
 
     //:::::::::::::::::::::::://
@@ -85,15 +87,16 @@ var validateManager = (function() {
 
     function onSubmitHandler(evt) {
         evt.preventDefault();
-
-        populateValues(function(successValues) {
-            options.successCallback(successValues);
-            submitButton.disabled = true;
-            formData.successValues = [];
-            if (options.resetFormOnSubmit) {
-                formElement.reset();
-            }
-        });
+        if (isRequiredFieldsCompleted() && formData.errorMessage.length === 0) {
+            populateValues(function(successValues) {
+                options.successCallback(successValues);
+                submitButton.disabled = true;
+                formData.successValues = [];
+                if (options.resetFormOnSubmit) {
+                    formElement.reset();
+                }
+            });
+        }
     }
 
     function onKeyUpHandler(evt) {
@@ -105,21 +108,22 @@ var validateManager = (function() {
             return;
         }
 
-        validateCurrentInput(evt.target.id);
+        validateCurrentInput(evt.target);
         updateSubmitButton();
     }
 
-
     function onChangeHandler(evt) {
         evt.preventDefault();
-        validateCurrentInput(evt.target.id);
+        validateCurrentInput(evt.target);
         updateSubmitButton();
     }
 
     // Replace the input selector with an actual DOM element
     function mergeInputElements(obj) {
-        var inputElement = helperFn.getElementList(obj.input)[0];
-        extend(obj, { input: inputElement, id: uniqueId.createNewId() });
+            var inputElement = (obj.name)
+                ? document.forms[formElement.id][obj.name]
+                : helperFn.getElementList(obj.input)[0];
+            extend(obj, { input: inputElement, id: uniqueId.createNewId() });
     }
 
     function createErrorPlaceholders(inputObject) {
@@ -127,7 +131,13 @@ var validateManager = (function() {
             type: 'div',
             attr: {'class': 'error-message', 'id': 'error-mgn-' + inputObject.id, 'style': 'display:none'}
         });
-        helperFn.insertAfter(errorMessageDiv, inputObject.input);
+
+        if (Object.prototype.toString.call(inputObject.input) === '[object RadioNodeList]') {
+            var lastElementPosition = inputObject.input.length;
+            helperFn.insertAfter(errorMessageDiv, inputObject.input[lastElementPosition - 1]);
+        } else {
+            helperFn.insertAfter(errorMessageDiv, inputObject.input);
+        }
     }
 
     // extends an object with new properties
@@ -171,7 +181,7 @@ var validateManager = (function() {
         formData.collection.forEach(function(inputObject) {
             if (currentInputId != inputObject.input.id) {
                 formData.successValues.push({
-                    id: inputObject.input.id,
+                    id: inputObject.input.id || inputObject.name,
                     value: inputObject.input.value
                 });
                 currentInputId = inputObject.input.id;
@@ -187,11 +197,21 @@ var validateManager = (function() {
         });
     }
 
+    function nameLookUp(name) {
+        return formData.collection.filter(function(obj) {
+            return (obj.name == name);
+        })
+    }
+
     // Validates the current input that matches the provided id
-    function validateCurrentInput(id) {
-        var inputObj = inputLookUp(id);
+    function validateCurrentInput(element) {
+        var inputObj = (element.getAttribute('type') === 'radio')
+            ? nameLookUp(element.name)
+            : inputLookUp(element.id);
+
         if (inputObj.length > 1) {
             inputObj.forEach(function(currInputObj) {
+
                 validateInput(currInputObj);
             });
         } else {
@@ -202,27 +222,40 @@ var validateManager = (function() {
     // Validation objects with 'rules' property will be pushed to the 'formData.collection' array separately
     function createMultiValidationObjects(obj) {
         obj.rules.forEach(function(inputObj) {
-            if (obj.required) {
-                formData.collection.push({
-                    input: obj.input,
-                    validateFn: inputObj.validateFn,
-                    error: inputObj.error,
-                    required: obj.required
-                });
-            } else {
-                formData.collection.push({
-                    input: obj.input,
-                    validateFn: inputObj.validateFn,
-                    error: inputObj.error
-                });
-            }
-
+            formData.collection.push(extend({
+                validateFn: inputObj.validateFn,
+                error: inputObj.error
+            }, obj));
         });
+    }
+
+    function isRadio(object) {
+        return (Object.prototype.toString.call(object) === '[object RadioNodeList]')
+    }
+
+    function assignValue(obj) {
+        var keys = Object.keys(obj);
+        for(var i = 0; i < keys.length; i++) {
+            if (keys[i] === 'maxLength') {
+                return { currLength: obj.input.value.length, maxLength: obj.maxLength };
+            }
+            if (keys[i] === 'minLength') {
+                return { currLength: obj.input.value.length, maxLength: obj.minLength };
+            }
+            if (keys[i] === 'equalTo') {
+                return { currValue: obj.input.value, selector: obj.equalTo };
+            }
+             if (keys[i] === 'name'){
+                 return obj.input;
+             }
+        }
+        return obj.input.value;
     }
 
     // validates the input field
     function validateInput(obj) {
-        if (obj.validateFn(obj.input.value)) {
+        var value = assignValue(obj);
+        if (obj.validateFn(value)) {
             hideErrorMessage(obj);
         } else {
             insertErrorMessage(obj);
@@ -239,10 +272,14 @@ var validateManager = (function() {
             });
 
             errorPlaceholder.style.display = 'none';
-            helperFn.removeClass(obj.input, 'error-highlight');
+            if (!isRadio(obj.input)) {
+                helperFn.removeClass(obj.input, 'error-highlight');
+            }
         } else {
             errorPlaceholder.style.display = 'none';
-            helperFn.removeClass(obj.input, 'error-highlight');
+            if (!isRadio(obj.input)) {
+                helperFn.removeClass(obj.input, 'error-highlight');
+            }
         }
     }
 
@@ -252,10 +289,14 @@ var validateManager = (function() {
             formData.errorMessage.push(obj.error);
             helperFn.html(errorPlaceholder, obj.error);
             errorPlaceholder.style.display = 'block';
-            helperFn.addClass(obj.input, 'error-highlight');
+            if (!isRadio(obj.input)) {
+                helperFn.addClass(obj.input, 'error-highlight');
+            }
         } else {
             errorPlaceholder.style.display = 'block';
-            helperFn.addClass(obj.input, 'error-highlight');
+             if (!isRadio(obj.input)) {
+                helperFn.addClass(obj.input, 'error-highlight');
+            }
         }
     }
 })();

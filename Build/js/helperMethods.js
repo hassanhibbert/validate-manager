@@ -78,6 +78,7 @@ validateManager.extend(validateManager.helperFn, {
     insertAfter: function(newNode, element) {
         var parentNode = element.parentNode;
         parentNode.insertBefore(newNode, element.nextSibling);
+
     },
     html: function(element, content) {
         element.innerHTML = content;

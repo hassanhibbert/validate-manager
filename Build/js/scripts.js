@@ -4,15 +4,26 @@ validateManager.config([
         input: '#name',
         rules: [
             { 
-                validateFn: validateManager.fn.hasValue, 
+                validateFn: validateManager.fn.hasValue,
                 error: 'Please fill in your name' 
             },
             { 
-                validateFn: validateManager.fn.isAlpha, 
-                error: 'Please do not use special characters or numbers' 
+                validateFn: validateManager.fn.isAlpha,
+                error: 'Letters only'
             }
         ],
         required: true
+    },
+    {
+        input: '#initial',
+        validateFn: validateManager.fn.maxLength,
+        maxLength: 2,
+        error: 'Max length is 2 characters'
+    },
+    {
+        name: 'operatingSystem',
+        validateFn: validateManager.fn.radio,
+        error: 'Please select an operating system'
     },
     {
         input: '#age',
