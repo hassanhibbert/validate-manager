@@ -1,6 +1,5 @@
 validateManager.extend(validateManager.fn, {
     hasValue: function(value) {
-        console.log(value)
         return !(value.length === 0 || value.trim() == "" || value == null);
     },
     isNumber: function(n) {
@@ -25,11 +24,9 @@ validateManager.extend(validateManager.fn, {
         return emailRegEx.test(email);
     },
     radio: function(radioNodeList) {
-        //console.log(radioNodeList);
         for (var i = 0; i < radioNodeList.length; ++ i) {
             if (radioNodeList[i].checked) {
                 return true;
-                //console.log(radioNodeList[i]);
             }
         }
         return false;

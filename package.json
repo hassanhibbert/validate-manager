@@ -1,0 +1,28 @@
+{
+  "name": "validate-manager",
+  "version": "1.0.0",
+  "description": "Form validation manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hassanhibbert/validateManager.git"
+  },
+  "keywords": [
+    "javascript",
+    "validate"
+  ],
+  "author": "Hassan Hibbert",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hassanhibbert/validateManager/issues"
+  },
+  "homepage": "https://github.com/hassanhibbert/validateManager#readme",
+  "devDependencies": {
+    "gulp-if": "^2.0.1",
+    "gulp-uglify": "^1.5.4",
+    "gulp-useref": "^3.1.0"
+  }
+}
