@@ -1,12 +1,12 @@
 var validateManager = (function() {
-
+    "use strict";
     var options,
         errorMessageDiv,
         formElement,
         submitButton,
+        tabOnce,
         internalValidationMethods = {},
         helperFn = {},
-        tabOnce,
 
         // Default options
         defaults = {
@@ -16,14 +16,11 @@ var validateManager = (function() {
             validateOnKeyUp: false
         },
 
-        // get/set unique id
+        // Set unique id
         uniqueId = {
             id: 0,
-            get: function() {
-                return this.id;
-            },
             createNewId: function() {
-                this.id += 1;
+                return this.id += 1;
             }
         },
 
@@ -37,6 +34,7 @@ var validateManager = (function() {
         publicAPI = {
             config: config,
             init: init,
+            extend: extend,
             fn: internalValidationMethods,
             helperFn: helperFn
         };
@@ -51,7 +49,7 @@ var validateManager = (function() {
 
         // Extend defaults and assign it to options
         if (obj && typeof obj === "object") {
-            options = extendDefaults(defaults, obj);
+            options = extend(defaults, obj);
         }
 
         // Get form DOM elements
@@ -71,13 +69,14 @@ var validateManager = (function() {
     // Updates the 'formData.collection' array with validation objects
     function config(data) {
         data.forEach(function(obj) {
-            if (obj.multiValidation) {
+            if (obj.rules) {
                 createMultiValidationObjects(obj);
             } else {
                 formData.collection.push(obj);
             }
         });
         formData.collection.forEach(mergeInputElements);
+        formData.collection.forEach(createErrorPlaceholders);
     }
 
     //:::::::::::::::::::::::://
@@ -119,13 +118,20 @@ var validateManager = (function() {
 
     // Replace the input selector with an actual DOM element
     function mergeInputElements(obj) {
-        uniqueId.createNewId();
         var inputElement = helperFn.getElementList(obj.input)[0];
-        extendDefaults(obj, {input: inputElement, id: uniqueId.get()});
+        extend(obj, { input: inputElement, id: uniqueId.createNewId() });
+    }
+
+    function createErrorPlaceholders(inputObject) {
+        errorMessageDiv = helperFn.createNode({
+            type: 'div',
+            attr: {'class': 'error-message', 'id': 'error-mgn-' + inputObject.id, 'style': 'display:none'}
+        });
+        helperFn.insertAfter(errorMessageDiv, inputObject.input);
     }
 
     // extends an object with new properties
-    function extendDefaults(source, properties) {
+    function extend(source, properties) {
         var property;
         for (property in properties) {
             if (properties.hasOwnProperty(property)) {
@@ -193,9 +199,9 @@ var validateManager = (function() {
         }
     }
 
-    // Validation objects with 'multiValidation' property will be pushed to the 'formData.collection' array separately
+    // Validation objects with 'rules' property will be pushed to the 'formData.collection' array separately
     function createMultiValidationObjects(obj) {
-        obj.multiValidation.forEach(function(inputObj) {
+        obj.rules.forEach(function(inputObj) {
             if (obj.required) {
                 formData.collection.push({
                     input: obj.input,
@@ -224,34 +230,32 @@ var validateManager = (function() {
     }
 
     function hideErrorMessage(obj) {
+        var errorPlaceholder = document.querySelector('#error-mgn-' + obj.id);
         if (formData.errorMessage.indexOf(obj.error) >= 0) {
+
+            // update error message array
             formData.errorMessage = formData.errorMessage.filter(function(errorMessage) {
                 return errorMessage != obj.error;
             });
-            document.querySelector('#error-mgn-' + obj.id).style.display = 'none';
+
+            errorPlaceholder.style.display = 'none';
             helperFn.removeClass(obj.input, 'error-highlight');
         } else {
-            if (helperFn.exists('#error-mgn-' + obj.id)) {
-                document.querySelector('#error-mgn-' + obj.id).style.display = 'none';
-                helperFn.removeClass(obj.input, 'error-highlight');
-            }
+            errorPlaceholder.style.display = 'none';
+            helperFn.removeClass(obj.input, 'error-highlight');
         }
     }
 
     function insertErrorMessage(obj) {
-        if (formData.errorMessage.indexOf(obj.error) < 0 && !helperFn.exists('#error-mgn-' + obj.id)) {
+        var errorPlaceholder = document.querySelector('#error-mgn-' + obj.id);
+        if (formData.errorMessage.indexOf(obj.error) < 0) {
             formData.errorMessage.push(obj.error);
-
-            errorMessageDiv = helperFn.createNode({
-                type: 'div',
-                attr: {'class': 'error-message', 'id': 'error-mgn-' + obj.id},
-                content: [obj.error]
-            });
-
-            helperFn.insertAfter(errorMessageDiv, obj.input);
+            helperFn.html(errorPlaceholder, obj.error);
+            errorPlaceholder.style.display = 'block';
             helperFn.addClass(obj.input, 'error-highlight');
         } else {
-            document.querySelector('#error-mgn-' + obj.id).style.display = 'block';
+            errorPlaceholder.style.display = 'block';
+            helperFn.addClass(obj.input, 'error-highlight');
         }
     }
 })();

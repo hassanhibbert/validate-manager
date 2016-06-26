@@ -1,12 +1,8 @@
-/**
- * Created by Hassan on 6/6/2016.
- */
-
 
 validateManager.config([
     {
         input: '#name',
-        multiValidation: [
+        rules: [
             { 
                 validateFn: validateManager.fn.hasValue, 
                 error: 'Please fill in your name' 
@@ -19,13 +15,13 @@ validateManager.config([
         required: true
     },
     {
-        validateFn: validateManager.fn.isNumber,
         input: '#age',
+        validateFn: validateManager.fn.isNumber,
         error: 'Age has to be a number'
     },
     {
-        validateFn: validateManager.fn.hasValue,
         input: '#car',
+        validateFn: validateManager.fn.hasValue,
         error: 'Please select a car',
         required: true
     }
@@ -40,7 +36,6 @@ validateManager.init({
 });
 
 function processForm(data) {
-
     //success
     var successDiv = document.getElementById('success');
     successDiv.innerHTML = JSON.stringify(data);
