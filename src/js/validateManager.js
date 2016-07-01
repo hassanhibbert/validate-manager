@@ -1,5 +1,6 @@
 var validateManager = (function() {
     "use strict";
+    
     var options,
         errorMessageDiv,
         formElement,
