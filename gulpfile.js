@@ -2,7 +2,7 @@ var gulp = require('gulp');
 var useref = require('gulp-useref');
 var gulpif = require('gulp-if');
 var uglify = require('gulp-uglify');
-var clean = require('gulp-clean')
+var clean = require('gulp-clean');
 
 gulp.task('build', ['clean'], function() {
     return gulp.src('src/*.html')
