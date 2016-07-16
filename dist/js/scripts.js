@@ -2,6 +2,7 @@
 validateManager.config([
     {
         input: '#name',
+        required: true,
         rules: [
             { 
                 validateFn: validateManager.fn.hasValue,
@@ -11,30 +12,46 @@ validateManager.config([
                 validateFn: validateManager.fn.isAlpha,
                 error: 'Letters only'
             }
-        ],
-        required: true
+        ]
     },
     {
         input: '#initial',
-        validateFn: validateManager.fn.maxLength,
         maxLength: 2,
-        error: 'Max length is 2 characters'
+        rules: [
+            {
+                validateFn: validateManager.fn.maxLength,
+                error: 'Max length is 2 characters'
+            }
+        ]
     },
     {
         name: 'operatingSystem',
-        validateFn: validateManager.fn.radio,
-        error: 'Please select an operating system'
+        rules: [
+            {
+                validateFn: validateManager.fn.radio,
+                error: 'Please select an operating system'
+            }
+        ]
     },
     {
         input: '#age',
-        validateFn: validateManager.fn.isNumber,
-        error: 'Age has to be a number'
+        rules: [
+            {
+                validateFn: validateManager.fn.isNumber,
+                error: 'Age has to be a number'
+            }
+        ]
+        
     },
     {
         input: '#car',
-        validateFn: validateManager.fn.hasValue,
-        error: 'Please select a car',
-        required: true
+        required: true,
+        rules: [
+            {
+                validateFn: validateManager.fn.hasValue,
+                error: 'Please select a car',
+            }
+        ]
     }
 ]);
 
