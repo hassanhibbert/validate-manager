@@ -6,7 +6,7 @@ var validateManager = (function() {
         formElement,
         submitButton,
         tabOnce,
-        internalValidationMethods = {},
+        validationMethods = {},
         helperFn = {},
 
         // Default options
@@ -36,7 +36,7 @@ var validateManager = (function() {
             config: config,
             init: init,
             extend: extend,
-            fn: internalValidationMethods,
+            method: validationMethods,
             helperFn: helperFn
         };
 
@@ -224,7 +224,7 @@ var validateManager = (function() {
     function createMultiValidationObjects(obj) {
         obj.rules.forEach(function(inputObj) {
             formData.collection.push(extend({
-                validateFn: inputObj.validateFn,
+                method: inputObj.method,
                 error: inputObj.error
             }, obj));
         });
@@ -241,7 +241,7 @@ var validateManager = (function() {
                 return { currLength: obj.input.value.length, maxLength: obj.maxLength };
             }
             if (keys[i] === 'minLength') {
-                return { currLength: obj.input.value.length, maxLength: obj.minLength };
+                return { currLength: obj.input.value.length, minLength: obj.minLength };
             }
             if (keys[i] === 'equalTo') {
                 return { currValue: obj.input.value, selector: obj.equalTo };
@@ -256,7 +256,7 @@ var validateManager = (function() {
     // validates the input field
     function validateInput(obj) {
         var value = assignValue(obj);
-        if (obj.validateFn(value)) {
+        if (obj.method(value)) {
             hideErrorMessage(obj);
         } else {
             insertErrorMessage(obj);

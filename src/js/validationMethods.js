@@ -1,4 +1,4 @@
-validateManager.extend(validateManager.fn, {
+validateManager.extend(validateManager.method, {
     hasValue: function(value) {
         return !(value.length === 0 || value.trim() == "" || value == null);
     },
