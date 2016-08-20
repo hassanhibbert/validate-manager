@@ -11,7 +11,7 @@ myForm.validate({
   rules: { isAlpha: true }
 }, {
   input: 'initial',
-  rules: { maxLength: 2 }
+  rules: { maxLength: 2, minLength: 2 }
 }, {
   input: 'operatingSystem',
   rules: { radio: true }

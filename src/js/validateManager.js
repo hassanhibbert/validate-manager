@@ -18,7 +18,7 @@ var validateManager = function validateManager(configObject) {
   //:::: HELPER UTILITY :::://
   //:::::::::::::::::::::::://
 
-  function helperUtils(){return{hasClass:function(a,b){return a.className&&new RegExp("(^|\\s)"+b+"(\\s|$)").test(a.className)},addClass:function(a,b){-1===a.className.indexOf(b)&&(""!=a.className&&(b=" "+b),a.className+=b)},removeClass:function(a,b){if(-1!=a.className.indexOf(b)){var c=new RegExp("(\\s|^)"+b+"(\\s|$)");a.className=a.className.replace(c," ").trim()}},getElementList:function(a){return"string"==typeof a?Array.prototype.slice.call(document.querySelectorAll(a)):"undefined"==typeof a||a instanceof Array?a:[a]},createNode:function(a){var b=a.type,c=a.attr,d=a.content,e=document.createElement(b);return c&&Object.keys(c).forEach(function(a){e.setAttribute(a,c[a])}),d&&d.forEach(function(a){"string"==typeof a?e.appendChild(document.createTextNode(a)):e.appendChild(a)}),e},insertAfter:function(a,b){var c=b.parentNode;c.insertBefore(a,b.nextSibling)},html:function(a,b){a.innerHTML=b},exists:function(a){return document.querySelectorAll(a).length>0},removeNode:function(a){a.parentNode.removeChild(a)},removeElement:function(a){helperFn.getElementList(a).forEach(function(a){helperFn.removeNode(a)})},once:function(){var a=[];return function(b,c){a.indexOf(c)<0&&(a.push(c),b())}},oncePerItem:function(){var a=[];return function(b){return a.indexOf(b)<0?(a.push(b),!0):!1}},extend:function(a,b){var c;for(c in b)b.hasOwnProperty(c)&&(a[c]=b[c]);return a},hasValue:function(a){return!(0===a.length||""==a.trim()||null==a)},isNumber:function(a){return!isNaN(parseFloat(a))&&isFinite(a)},isAlpha:function(a){var b=/[0-9]+/;return!b.test(a)},maxLength:function(a){return a.currLength<=a.maxLength},minLength:function(a){return a.currLength>=a.minLength},equalTo:function(a){var b=document.querySelector(a.selector);return a.currValue===b.value},email:function(a){var b=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return b.test(a)},radio:function(a){for(var b=0;b<a.length;++b)if(a[b].checked)return!0;return!1}}}
+  function helperUtils(){return{hasClass:function(a,b){return a.className&&new RegExp("(^|\\s)"+b+"(\\s|$)").test(a.className)},addClass:function(a,b){-1===a.className.indexOf(b)&&(""!=a.className&&(b=" "+b),a.className+=b)},removeClass:function(a,b){if(-1!=a.className.indexOf(b)){var c=new RegExp("(\\s|^)"+b+"(\\s|$)");a.className=a.className.replace(c," ").trim()}},getElementList:function(a){return"string"==typeof a?Array.prototype.slice.call(document.querySelectorAll(a)):"undefined"==typeof a||a instanceof Array?a:[a]},createNode:function(a){var b=a.type,c=a.attr,d=a.content,e=document.createElement(b);return c&&Object.keys(c).forEach(function(a){e.setAttribute(a,c[a])}),d&&d.forEach(function(a){"string"==typeof a?e.appendChild(document.createTextNode(a)):e.appendChild(a)}),e},insertAfter:function(a,b){var c=b.parentNode;c.insertBefore(a,b.nextSibling)},html:function(a,b){a.innerHTML=b},exists:function(a){return document.querySelectorAll(a).length>0},removeNode:function(a){a.parentNode.removeChild(a)},removeElement:function(a){helperFn.getElementList(a).forEach(function(a){helperFn.removeNode(a)})},once:function(){var a=[];return function(b,c){a.indexOf(c)<0&&(a.push(c),b())}},oncePerItem:function(){var a=[];return function(b){return a.indexOf(b)<0?(a.push(b),!0):!1}},extend:function(a,b){var c;for(c in b)b.hasOwnProperty(c)&&(a[c]=b[c]);return a},validateMethods:{hasValue:function(a){return!(0===a.length||""==a.trim()||null==a)},number:function(a){return!isNaN(parseFloat(a))&&isFinite(a)},isAlpha:function(a){var b=/[0-9]+/;return!b.test(a)},maxLength:function(a,b){return a.length<=b},minLength:function(a,b){return a.length>=b},equalTo:function(a,b){var c=document.querySelector(b);return a===c.value},email:function(a){var b=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return b.test(a)},radio:function(a){for(var b=0;b<a.length;++b)if(a[b].checked)return!0;return!1}}}}
 
   //::::::::::::::::::::::::::://
 
@@ -30,7 +30,7 @@ var validateManager = function validateManager(configObject) {
     formData.validateObjects = addDomElementsForEach(validateObjWithId);
     createErrorPlaceholders(formData.validateObjects);
 
-    // initialize form and set listeners
+    // initialize form
     init();
   }
 
@@ -40,8 +40,61 @@ var validateManager = function validateManager(configObject) {
 
   function onChangeHandler(event) {
     event.preventDefault();
-    //validateCurrentInput(evt.target);
-    //updateSubmitButton();
+    validateInput(event.target);
+  }
+
+  function validateInput(inputElement) {
+    //console.log(getValidateObject('operatingSystem')[0]);
+    var ruleKeys,
+        currentValidateRules,
+        validateMethods = utils.validateMethods,
+        currentValidateObject = getValidateObject(inputElement.name)[0],
+        hasRules = currentValidateObject.hasOwnProperty('rules'),
+        isRequired = currentValidateObject.hasOwnProperty('required') && currentValidateObject.required;
+
+    // assign validation rules. if the validation object is required then add 'hasValue' to rules
+    if (hasRules && isRequired) {
+      currentValidateRules = utils.extend(currentValidateObject.rules, { hasValue: true });
+    } else if (hasRules && !isRequired) {
+      currentValidateRules = currentValidateObject.rules;
+    } else if (!hasRules && isRequired) {
+      var validateObjectWithRules = utils.extend(currentValidateObject, { rules: { hasValue: true } });
+      currentValidateRules = validateObjectWithRules.rules;
+    }
+
+    ruleKeys = Object.keys(currentValidateRules);
+
+    // validate each rule
+    ruleKeys.forEach((ruleKey) => {
+      var dynamicValidateMethod,
+          isKeyBoolean = typeof currentValidateRules[ruleKey] === 'boolean',
+          secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
+          inputValue = (ruleKey === 'radio') ? currentValidateObject.input : inputElement.value;
+
+      if (typeof validateMethods[ruleKey] === 'function') {
+        dynamicValidateMethod = validateMethods[ruleKey];
+      } else {
+        throw '"' +validateMethods[ruleKey] + '" is not a valid method.';
+      }
+
+      if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue)) {
+        console.log('passed: ', ruleKey);
+      } else {
+        console.log('failed: ', ruleKey);
+      }
+
+    });
+  }
+
+  function getValidateObject(elementName) {
+    return formData.validateObjects.filter((obj) => {
+      if (Object.prototype.toString.call(obj.input) === '[object RadioNodeList]') {
+        return (obj.input[0].name === elementName);
+      } else {
+        return (obj.input.name === elementName);
+      }
+
+    });
   }
 
   function createIdForEach(validateObjects) {
