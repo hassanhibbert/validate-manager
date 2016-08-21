@@ -44,12 +44,8 @@ var validateManager = function validateManager(configObject) {
 
   function validate(...validationObjects) {
 
-    // setup validation object
-    var validateObjWithId = createIdForEach(validationObjects),
-        validateObjWithElements = addDomElementsForEach(validateObjWithId),
-        validateObjWithRequired = addRequiredRules(validateObjWithElements);
-
-    formData.validateObjects = addErrorMessages(validateObjWithRequired);
+    // get validation object after setup
+    formData.validateObjects = setupValidationObjects(validationObjects);
 
     // setup placeholders in dom for errors
     createErrorPlaceholders(formData.validateObjects);
@@ -58,6 +54,12 @@ var validateManager = function validateManager(configObject) {
     init();
   }
 
+  function setupValidationObjects(validationObjects) {
+    var validateObjId = createIdForEach(validationObjects),
+        validateObjElements = addDomElementsForEach(validateObjId),
+        validateObjRequired = addRequiredRules(validateObjElements);
+    return addErrorMessages(validateObjRequired);
+  }
 
 
   function init() {
