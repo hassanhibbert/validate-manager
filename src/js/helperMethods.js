@@ -91,9 +91,9 @@ function helperUtils() {
       element.parentNode.removeChild(element);
     },
     removeElement: function (selector) {
-      helperFn.getElementList(selector)
+      helperUtils.getElementList(selector)
         .forEach(function (element) {
-          helperFn.removeNode(element);
+          helperUtils.removeNode(element);
         });
     },
     once: function () {
@@ -125,6 +125,18 @@ function helperUtils() {
       }
       return source;
     },
+    isBoolean: function (obj) {
+      return typeof obj === 'boolean';
+    },
+    isRadioList: function (obj) {
+      return Object.prototype.toString.call(obj) === '[object RadioNodeList]'
+    },
+    isObject: function (obj) {
+      return Object.prototype.toString.call(obj) === '[object Object]'
+    },
+    isFunction: function (fn) {
+      return typeof fn === 'function';
+    },
     validateMethods: {
       'hasValue': function (value) {
         return !(value.length === 0 || value.trim() == "" || value == null);
@@ -142,8 +154,8 @@ function helperUtils() {
       'minLength': function (value, minLength) {
         return (value.length >= minLength);
       },
-      'equalTo': function (value, secondMatchSelector) {
-        var element = document.querySelector(secondMatchSelector);
+      'equalTo': function (value, elementName, mainForm) {
+        var element = mainForm[elementName];
         return (value === element.value);
       },
       'email': function (email) {
