@@ -2,7 +2,7 @@ var validateManager = function validateManager(configObject) {
   'use strict';
 
   var utils = helperUtils(),
-      formElement = document.forms[configObject.formName],
+      config = {},
       formData = {
         validateObjects: null,
         errorQueue: [],
@@ -12,30 +12,57 @@ var validateManager = function validateManager(configObject) {
         validate: validate
       };
 
+  // setup data in 'config' object
+  processConfig(configObject);
+
   return publicAPI;
 
   //:::::::::::::::::::::::://
   //:::: HELPER UTILITY :::://
   //:::::::::::::::::::::::://
 
-  function helperUtils(){return{hasClass:function(a,b){return a.className&&new RegExp("(^|\\s)"+b+"(\\s|$)").test(a.className)},addClass:function(a,b){-1===a.className.indexOf(b)&&(""!=a.className&&(b=" "+b),a.className+=b)},removeClass:function(a,b){if(-1!=a.className.indexOf(b)){var c=new RegExp("(\\s|^)"+b+"(\\s|$)");a.className=a.className.replace(c," ").trim()}},getElementList:function(a){return"string"==typeof a?Array.prototype.slice.call(document.querySelectorAll(a)):"undefined"==typeof a||a instanceof Array?a:[a]},createNode:function(a){var b=a.type,c=a.attr,d=a.content,e=document.createElement(b);return c&&Object.keys(c).forEach(function(a){e.setAttribute(a,c[a])}),d&&d.forEach(function(a){"string"==typeof a?e.appendChild(document.createTextNode(a)):e.appendChild(a)}),e},insertAfter:function(a,b){var c=b.parentNode;c.insertBefore(a,b.nextSibling)},html:function(a,b){a.innerHTML=b},exists:function(a){return document.querySelectorAll(a).length>0},removeNode:function(a){a.parentNode.removeChild(a)},removeElement:function(a){helperFn.getElementList(a).forEach(function(a){helperFn.removeNode(a)})},once:function(){var a=[];return function(b,c){a.indexOf(c)<0&&(a.push(c),b())}},oncePerItem:function(){var a=[];return function(b){return a.indexOf(b)<0?(a.push(b),!0):!1}},extend:function(a,b){var c;for(c in b)b.hasOwnProperty(c)&&(a[c]=b[c]);return a},validateMethods:{hasValue:function(a){return!(0===a.length||""==a.trim()||null==a)},number:function(a){return!isNaN(parseFloat(a))&&isFinite(a)},isAlpha:function(a){var b=/[0-9]+/;return!b.test(a)},maxLength:function(a,b){return a.length<=b},minLength:function(a,b){return a.length>=b},equalTo:function(a,b){var c=document.querySelector(b);return a===c.value},email:function(a){var b=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return b.test(a)},radio:function(a){for(var b=0;b<a.length;++b)if(a[b].checked)return!0;return!1}}}}
+  function helperUtils(){return{hasClass:function(e,t){return e.className&&new RegExp("(^|\\s)"+t+"(\\s|$)").test(e.className)},addClass:function(e,t){e.className.indexOf(t)===-1&&(""!=e.className&&(t=" "+t),e.className+=t)},removeClass:function(e,t){if(e.className.indexOf(t)!=-1){var n=new RegExp("(\\s|^)"+t+"(\\s|$)");e.className=e.className.replace(n," ").trim()}},getElementList:function(e){return"string"==typeof e?Array.prototype.slice.call(document.querySelectorAll(e)):"undefined"==typeof e||e instanceof Array?e:[e]},createNode:function(e){var t=e.type,n=e.attr,r=e.content,o=document.createElement(t);return n&&Object.keys(n).forEach(function(e){o.setAttribute(e,n[e])}),r&&r.forEach(function(e){"string"==typeof e?o.appendChild(document.createTextNode(e)):o.appendChild(e)}),o},insertAfter:function(e,t){var n=t.parentNode;n.insertBefore(e,t.nextSibling)},html:function(e,t){e.innerHTML=t},exists:function(e){return document.querySelectorAll(e).length>0},removeNode:function(e){e.parentNode.removeChild(e)},removeElement:function(e){helperUtils.getElementList(e).forEach(function(e){helperUtils.removeNode(e)})},once:function(){var e=[];return function(t,n){e.indexOf(n)<0&&(e.push(n),t())}},oncePerItem:function(){var e=[];return function(t){return e.indexOf(t)<0&&(e.push(t),!0)}},extend:function(e,t){var n;for(n in t)t.hasOwnProperty(n)&&(e[n]=t[n]);return e},isBoolean:function(e){return"boolean"==typeof e},isRadioList:function(e){return"[object RadioNodeList]"===Object.prototype.toString.call(e)},isObject:function(e){return"[object Object]"===Object.prototype.toString.call(e)},isFunction:function(e){return"function"==typeof e},validateMethods:{hasValue:function(e){return!(0===e.length||""==e.trim()||null==e)},number:function(e){return!isNaN(parseFloat(e))&&isFinite(e)},isAlpha:function(e){var t=/[0-9]+/;return!t.test(e)},maxLength:function(e,t){return e.length<=t},minLength:function(e,t){return e.length>=t},equalTo:function(e,t,n){var r=n[t];return e===r.value},email:function(e){var t=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return t.test(e)},radio:function(e){for(var t=0;t<e.length;++t)if(e[t].checked)return!0;return!1}}}}
 
   //::::::::::::::::::::::::::://
 
-  function validate(...validationObjects) {
-    var validateObjWithId;
+  function processConfig(configObj) {
 
-    // setup validation objects, and placeholders for errors
-    validateObjWithId = createIdForEach(validationObjects);
-    formData.validateObjects = addDomElementsForEach(validateObjWithId);
+    if (utils.isObject(configObj)) {
+
+      config.formElement = (configObj.hasOwnProperty('formName'))
+        ? document.forms[configObject.formName]
+        : null;
+
+      config.onSuccessCallback = (configObj.hasOwnProperty('onSuccess') && utils.isFunction(configObj.onSuccess))
+        ? configObj.onSuccess
+        : null;
+
+    } else {
+      throw 'Not an object.'
+    }
+  }
+
+  function validate(...validationObjects) {
+
+    // setup validation object
+    var validateObjWithId = createIdForEach(validationObjects),
+        validateObjWithElements = addDomElementsForEach(validateObjWithId),
+        validateObjWithRequired = addRequiredRules(validateObjWithElements);
+
+    formData.validateObjects = addErrorMessages(validateObjWithRequired);
+
+    // setup placeholders in dom for errors
     createErrorPlaceholders(formData.validateObjects);
 
     // initialize form
     init();
   }
 
+
+
   function init() {
-    formElement.addEventListener('change', onChangeHandler, false);
+    config.formElement.addEventListener('change', onChangeHandler, false);
+    config.formElement.addEventListener('submit', onSubmitHandler, false);
   }
 
   function onChangeHandler(event) {
@@ -43,44 +70,130 @@ var validateManager = function validateManager(configObject) {
     validateInput(event.target);
   }
 
+  function onSubmitHandler(event) {
+    event.preventDefault();
+    var requiredFields = getRequiredFields(formData.validateObjects),
+        requiredFieldsCompleted = getRequiredFieldsCompleted(requiredFields);
+
+    validateAllRequiredFields(requiredFields);
+
+    if (isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted)
+      && formData.errorQueue.length === 0) {
+
+    }
+  }
+
+  function defaultErrorMessages() {
+    var errors = {},
+      updateObj = {};
+    return {
+      set: function (key, value) {
+        updateObj[key] = value;
+      },
+      get: function(key) {
+        errors.isAlpha = 'Please use letters only';
+        errors.radio = 'Please select an option';
+        errors.email = 'Please enter a valid email address';
+        errors.equalTo = `This field is not the same as ${updateObj['equalTo']}`;
+        errors.minLength = `Please enter a minimum of ${updateObj['minLength']} characters`;
+        errors.maxLength = `Please enter a maximum of ${updateObj['maxLength']} characters`;
+        errors.number = 'Please enter a valid number';
+        errors.hasValue = 'Please fill out the required field';
+        return errors[key];
+      }
+    }
+  }
+
+  function addRequiredRules(validateObjects) {
+    var hasRules,
+        isRequired,
+        validateObjectsCopy = [...validateObjects],
+        validateObjectRequiredRules = [];
+
+    validateObjectsCopy.forEach((currentValidateObject) => {
+
+      hasRules = currentValidateObject.hasOwnProperty('rules');
+      isRequired = currentValidateObject.hasOwnProperty('required') && currentValidateObject.required;
+
+      // assign validation rules. if the validation object is required then add 'hasValue' to rules
+      if (hasRules && isRequired) {
+        utils.extend(currentValidateObject.rules, { hasValue: true });
+      } else if (!hasRules && isRequired) {
+        utils.extend(currentValidateObject, { rules: { hasValue: true } });
+      }
+
+      validateObjectRequiredRules.push(currentValidateObject);
+    });
+
+    return validateObjectRequiredRules;
+  }
+
+  function addErrorMessages(validateObjects) {
+    var validateObjectsCopy = [...validateObjects],
+      validateObjectsErrors = [],
+      errorMessages = defaultErrorMessages();
+
+    validateObjectsCopy.forEach((validateObject) => {
+      var ruleKeys = Object.keys(validateObject.rules);
+
+      validateObject.errorMessages = validateObject.errorMessages || {};
+      ruleKeys.forEach((ruleKey) => {
+
+        // protect custom error messages if there's one present
+        if (!validateObject.errorMessages.hasOwnProperty(ruleKey)
+          && utils.isBoolean(validateObject.rules[ruleKey])) {
+
+          // add default error messages
+          validateObject.errorMessages[ruleKey] = errorMessages.get(ruleKey);
+        } else if (!validateObject.errorMessages.hasOwnProperty(ruleKey)) {
+
+          // add default error messages with dynamic values
+          errorMessages.set(ruleKey, validateObject.rules[ruleKey]);
+          validateObject.errorMessages[ruleKey] = errorMessages.get(ruleKey);
+        }
+      });
+      validateObjectsErrors.push(validateObject);
+    });
+    return validateObjectsErrors;
+  }
+
+  function addDomElementsForEach(validateObjects) {
+    return validateObjects.map((validateObject) => {
+      return utils.extend(validateObject, { input: config.formElement[validateObject.input] });
+    });
+  }
+
+  function validateAllRequiredFields(requiredFields) {
+    requiredFields.forEach((validateObject) => {
+      validateInput(validateObject.input);
+    });
+  }
+
   function validateInput(inputElement) {
-    //console.log(getValidateObject('operatingSystem')[0]);
     var ruleKeys,
-        currentValidateRules,
         validateMethods = utils.validateMethods,
         currentValidateObject = getValidateObject(inputElement.name)[0],
-        hasRules = currentValidateObject.hasOwnProperty('rules'),
-        isRequired = currentValidateObject.hasOwnProperty('required') && currentValidateObject.required;
-
-    // assign validation rules. if the validation object is required then add 'hasValue' to rules
-    if (hasRules && isRequired) {
-      currentValidateRules = utils.extend(currentValidateObject.rules, { hasValue: true });
-    } else if (hasRules && !isRequired) {
-      currentValidateRules = currentValidateObject.rules;
-    } else if (!hasRules && isRequired) {
-      var validateObjectWithRules = utils.extend(currentValidateObject, { rules: { hasValue: true } });
-      currentValidateRules = validateObjectWithRules.rules;
-    }
+        currentValidateRules = currentValidateObject.rules;
 
     ruleKeys = Object.keys(currentValidateRules);
 
     // validate each rule
     ruleKeys.forEach((ruleKey) => {
       var dynamicValidateMethod,
-          isKeyBoolean = typeof currentValidateRules[ruleKey] === 'boolean',
+          isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
           secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
           inputValue = (ruleKey === 'radio') ? currentValidateObject.input : inputElement.value;
 
-      if (typeof validateMethods[ruleKey] === 'function') {
+      if (utils.isFunction(validateMethods[ruleKey])) {
         dynamicValidateMethod = validateMethods[ruleKey];
       } else {
-        throw '"' +validateMethods[ruleKey] + '" is not a valid method.';
+        throw '"' + validateMethods[ruleKey] + '" is not a valid method.';
       }
 
-      if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue)) {
-        console.log('passed: ', ruleKey);
+      if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue, config.formElement)) {
+        console.log('passed: ', ruleKey, inputElement);
       } else {
-        console.log('failed: ', ruleKey);
+        console.log('failed: ', ruleKey, inputElement);
       }
 
     });
@@ -88,45 +201,32 @@ var validateManager = function validateManager(configObject) {
 
   function getValidateObject(elementName) {
     return formData.validateObjects.filter((obj) => {
-      if (Object.prototype.toString.call(obj.input) === '[object RadioNodeList]') {
-        return (obj.input[0].name === elementName);
-      } else {
-        return (obj.input.name === elementName);
-      }
-
+      return (utils.isRadioList(obj.input))
+        ? (obj.input[0].name === elementName)
+        : (obj.input.name === elementName);
     });
   }
 
   function createIdForEach(validateObjects) {
-    var validateObjectsCopy = [...validateObjects],
-        validateObjectsWithId = validateObjectsCopy.map((validateObject, index) => {
-          return utils.extend(validateObject, { id: index });
-        });
-    return validateObjectsWithId;
-  }
-
-  function addDomElementsForEach(validateObjects) {
-    var validateObjectsCopy = [...validateObjects],
-        validateObjectsWithElement = validateObjectsCopy.map((validateObject) => {
-          return utils.extend(validateObject, { input: formElement[validateObject.input] });
-        });
-    return validateObjectsWithElement;
-  }
-
-  function getRequiredFields() {
-        return formData.validateObjects.filter(function(validateObject) {
-            return (validateObject.required);
-        });
-    }
-
-  function getRequiredFieldsCompleted() {
-    return getRequiredFields().filter(function (validateObject) {
-      return (utils.hasValue(validateObject.input.value));
+    return validateObjects.map((validateObject, index) => {
+      return utils.extend(validateObject, { id: index });
     });
   }
 
-  function isRequiredFieldsCompleted() {
-    return (getRequiredFieldsCompleted().length === getRequiredFields().length);
+  function getRequiredFields(validateObj) {
+    return validateObj.filter((validateObject) => {
+      return (validateObject.required);
+    });
+  }
+
+  function getRequiredFieldsCompleted(requiredFields) {
+    return requiredFields.filter((validateObject) => {
+      return (utils.validateMethods.hasValue(validateObject.input.value));
+    });
+  }
+
+  function isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted) {
+    return (requiredFieldsCompleted.length === requiredFields.length);
   }
 
   function createErrorPlaceholders(validateObjects) {
