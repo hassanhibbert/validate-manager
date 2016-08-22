@@ -171,11 +171,45 @@ var validateManager = function validateManager(configObject) {
     });
   }
 
+  function updateQueue() {
+    return {
+      add: function (queue, obj) {
+        formData[queue].push(obj);
+      },
+      remove: function(queue, value) {
+        formData[queue] = formData[queue].filter((currentItem) => {
+          return currentItem !== value;
+        });
+      },
+      checkQueue: function(queue, value) {
+        //getValidateObject(inputElement.name)[0]
+        var isInQueue = formData[queue].filter((currentItem) => {
+          return currentItem === value;
+        });
+        return isInQueue.length === 1;
+      }
+    };
+  }
+
+  function showError(id, errorMessage) {
+    var errorElement = document.querySelector('#error-mgn-' + id);
+    utils.html(errorElement, errorMessage);
+    errorElement.style.display = 'block';
+  }
+
+  function hideError(id, errorMessage) {
+    var errorElement = document.querySelector('#error-mgn-' + id);
+    if (errorMessage === errorElement.innerHTML) {
+      errorElement.style.display = 'none';
+    }
+  }
+
   function validateInput(inputElement) {
     var ruleKeys,
         validateMethods = utils.validateMethods,
         currentValidateObject = getValidateObject(inputElement.name)[0],
-        currentValidateRules = currentValidateObject.rules;
+        currentValidateRules = currentValidateObject.rules,
+        queue = updateQueue();
 
     ruleKeys = Object.keys(currentValidateRules);
 
@@ -193,11 +227,19 @@ var validateManager = function validateManager(configObject) {
       }
 
       if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue, config.formElement)) {
-        console.log('passed: ', ruleKey, inputElement);
+        var errorMessageToRemove = currentValidateObject.errorMessages[ruleKey];
+        //if (queue.checkQueue('errorQueue', errorMessageToRemove)) {
+          queue.remove('errorQueue', errorMessageToRemove);
+          hideError(currentValidateObject.id, errorMessageToRemove);
+        //}
       } else {
-        console.log('failed: ', ruleKey, inputElement);
+        var errorMessageToAdd = currentValidateObject.errorMessages[ruleKey];
+        //if (!queue.checkQueue('errorQueue', errorMessageToAdd)) {
+          queue.add('errorQueue', errorMessageToAdd);
+          showError(currentValidateObject.id, errorMessageToAdd);
+        //}
       }
-
+      console.log('error: ',formData.errorQueue);
     });
   }
 
