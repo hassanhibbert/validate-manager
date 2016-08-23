@@ -1,7 +1,9 @@
 var myForm = validateManager({
-  formName: 'myForm',
+  formElement: 'myForm',
+  preventSubmit: true,
   onSuccess: function (data) {
     console.log('form complete');
+    console.log('data from form: ', data);
   }
 });
 

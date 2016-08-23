@@ -1,21 +1,8 @@
 function helperUtils() {
   return {
-    /**
-     * Checks to see if element has the specified class name
-     *
-     * @param {element} DOM element to be tested
-     * @param {string} Class name to test for
-     * @returns {boolean} returns true or false whether the class name is in the element
-     */
     hasClass: function (element, className) {
       return element.className && new RegExp("(^|\\s)" + className + "(\\s|$)").test(element.className);
     },
-    /**
-     * Adds class name to element
-     *
-     * @param {element} DOM element for class name to be added
-     * @param {string} Class name to add
-     */
     addClass: function (element, className) {
       if (element.className.indexOf(className) === -1) {
         if (element.className != '') {
@@ -23,24 +10,13 @@ function helperUtils() {
         }
         element.className += className;
       }
-    }, /**
-     * Removes class name to element
-     *
-     * @param {element} DOM element for class name to be removed
-     * @param {string} Class name to remove
-     */
+    },
     removeClass: function (element, className) {
       if (element.className.indexOf(className) != -1) {
         var rxp = new RegExp('(\\s|^)' + className + '(\\s|$)');
         element.className = element.className.replace(rxp, ' ').trim();
       }
     },
-    /**
-     * Normalize a selector string, a single DOM element or an array of elements into an array of DOM elements.
-     *
-     * @param {(string|element|array)} elements - Selector, DOM element or Array of DOM elements
-     * @returns {array} Array of DOM elements
-     */
     getElementList: function (elements) {
       if (typeof elements === 'string') {
         return Array.prototype.slice.call(document.querySelectorAll(elements));
@@ -50,13 +26,12 @@ function helperUtils() {
         return [elements];
       }
     },
-    // create DOM elements with attributes and content on-the-fly
     createNode: function (element) {
 
       var elemType = element.type,
-        attributes = element.attr,
-        innerContent = element.content,
-        el = document.createElement(elemType);
+          attributes = element.attr,
+          innerContent = element.content,
+          el = document.createElement(elemType);
 
       if (attributes) {
         Object.keys(attributes).forEach(function (attrName) {
@@ -90,32 +65,6 @@ function helperUtils() {
     removeNode: function (element) {
       element.parentNode.removeChild(element);
     },
-    removeElement: function (selector) {
-      helperUtils.getElementList(selector)
-        .forEach(function (element) {
-          helperUtils.removeNode(element);
-        });
-    },
-    once: function () {
-      var arr = [];
-      return function (callback, id) {
-        if (arr.indexOf(id) < 0) {
-          arr.push(id);
-          callback();
-        }
-      }
-    },
-    oncePerItem: function () {
-      var arr = [];
-      return function (id) {
-        if (arr.indexOf(id) < 0) {
-          arr.push(id);
-          return true;
-        } else {
-          return false;
-        }
-      }
-    },
     extend: function extend(source, properties) {
       var property;
       for (property in properties) {
@@ -136,40 +85,6 @@ function helperUtils() {
     },
     isFunction: function (fn) {
       return typeof fn === 'function';
-    },
-    validateMethods: {
-      'hasValue': function (value) {
-        return !(value.length === 0 || value.trim() == "" || value == null);
-      },
-      'number': function (n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-      },
-      'isAlpha': function (value) {
-        var regExNumber = /[0-9]+/;
-        return !(regExNumber.test(value));
-      },
-      'maxLength': function (value, maxLength) {
-        return (value.length <= maxLength);
-      },
-      'minLength': function (value, minLength) {
-        return (value.length >= minLength);
-      },
-      'equalTo': function (value, elementName, mainForm) {
-        var element = mainForm[elementName];
-        return (value === element.value);
-      },
-      'email': function (email) {
-        var emailRegEx = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return emailRegEx.test(email);
-      },
-      'radio': function (radioNodeList) {
-        for (var i = 0; i < radioNodeList.length; ++i) {
-          if (radioNodeList[i].checked) {
-            return true;
-          }
-        }
-        return false;
-      }
     }
   }
 }

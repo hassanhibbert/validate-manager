@@ -1,53 +1,61 @@
-var validateManager = function validateManager(configObject) {
+var validateManager = function validateManager(configOptions) {
   'use strict';
 
   var utils = helperUtils(),
-      config = {},
-      formData = {
-        validateObjects: null,
-        errorQueue: [],
-        successQueue: []
-      },
-      publicAPI = {
-        validate: validate
-      };
+    defaultOptions = {
+      onSuccess: null,
+      formElement: null,
+      preventSubmit: false,
+      validateOnChange: true,
+      resetFormOnSubmit: true,
+    },
+    validateMethod = {
+      radio: radio,
+      email: email,
+      number: number,
+      equalTo: equalTo,
+      isAlpha: isAlpha,
+      required: required,
+      maxLength: maxLength,
+      minLength: minLength,
+    },
+    options = {},
+    formData = {
+      validateObjects: null,
+      errorQueue: []
+    },
+    publicAPI = {
+      validate: validate
+    };
 
-  // setup data in 'config' object
-  processConfig(configObject);
+  extendDefaultOptions(configOptions); // extend options
 
   return publicAPI;
 
-  //:::::::::::::::::::::::://
-  //:::: HELPER UTILITY :::://
-  //:::::::::::::::::::::::://
 
-  function helperUtils(){return{hasClass:function(e,t){return e.className&&new RegExp("(^|\\s)"+t+"(\\s|$)").test(e.className)},addClass:function(e,t){e.className.indexOf(t)===-1&&(""!=e.className&&(t=" "+t),e.className+=t)},removeClass:function(e,t){if(e.className.indexOf(t)!=-1){var n=new RegExp("(\\s|^)"+t+"(\\s|$)");e.className=e.className.replace(n," ").trim()}},getElementList:function(e){return"string"==typeof e?Array.prototype.slice.call(document.querySelectorAll(e)):"undefined"==typeof e||e instanceof Array?e:[e]},createNode:function(e){var t=e.type,n=e.attr,r=e.content,o=document.createElement(t);return n&&Object.keys(n).forEach(function(e){o.setAttribute(e,n[e])}),r&&r.forEach(function(e){"string"==typeof e?o.appendChild(document.createTextNode(e)):o.appendChild(e)}),o},insertAfter:function(e,t){var n=t.parentNode;n.insertBefore(e,t.nextSibling)},html:function(e,t){e.innerHTML=t},exists:function(e){return document.querySelectorAll(e).length>0},removeNode:function(e){e.parentNode.removeChild(e)},removeElement:function(e){helperUtils.getElementList(e).forEach(function(e){helperUtils.removeNode(e)})},once:function(){var e=[];return function(t,n){e.indexOf(n)<0&&(e.push(n),t())}},oncePerItem:function(){var e=[];return function(t){return e.indexOf(t)<0&&(e.push(t),!0)}},extend:function(e,t){var n;for(n in t)t.hasOwnProperty(n)&&(e[n]=t[n]);return e},isBoolean:function(e){return"boolean"==typeof e},isRadioList:function(e){return"[object RadioNodeList]"===Object.prototype.toString.call(e)},isObject:function(e){return"[object Object]"===Object.prototype.toString.call(e)},isFunction:function(e){return"function"==typeof e},validateMethods:{hasValue:function(e){return!(0===e.length||""==e.trim()||null==e)},number:function(e){return!isNaN(parseFloat(e))&&isFinite(e)},isAlpha:function(e){var t=/[0-9]+/;return!t.test(e)},maxLength:function(e,t){return e.length<=t},minLength:function(e,t){return e.length>=t},equalTo:function(e,t,n){var r=n[t];return e===r.value},email:function(e){var t=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;return t.test(e)},radio:function(e){for(var t=0;t<e.length;++t)if(e[t].checked)return!0;return!1}}}}
+  /*
+   * helper methods
+   */
 
-  //::::::::::::::::::::::::::://
+  function helperUtils(){return{hasClass:function(e,t){return e.className&&new RegExp("(^|\\s)"+t+"(\\s|$)").test(e.className)},addClass:function(e,t){e.className.indexOf(t)===-1&&(""!=e.className&&(t=" "+t),e.className+=t)},removeClass:function(e,t){if(e.className.indexOf(t)!=-1){var n=new RegExp("(\\s|^)"+t+"(\\s|$)");e.className=e.className.replace(n," ").trim()}},getElementList:function(e){return"string"==typeof e?Array.prototype.slice.call(document.querySelectorAll(e)):"undefined"==typeof e||e instanceof Array?e:[e]},createNode:function(e){var t=e.type,n=e.attr,o=e.content,r=document.createElement(t);return n&&Object.keys(n).forEach(function(e){r.setAttribute(e,n[e])}),o&&o.forEach(function(e){"string"==typeof e?r.appendChild(document.createTextNode(e)):r.appendChild(e)}),r},insertAfter:function(e,t){var n=t.parentNode;n.insertBefore(e,t.nextSibling)},html:function(e,t){e.innerHTML=t},exists:function(e){return document.querySelectorAll(e).length>0},removeNode:function(e){e.parentNode.removeChild(e)},extend:function(e,t){var n;for(n in t)t.hasOwnProperty(n)&&(e[n]=t[n]);return e},isBoolean:function(e){return"boolean"==typeof e},isRadioList:function(e){return"[object RadioNodeList]"===Object.prototype.toString.call(e)},isObject:function(e){return"[object Object]"===Object.prototype.toString.call(e)},isFunction:function(e){return"function"==typeof e}}}
 
-  function processConfig(configObj) {
+  //////////////////////
 
-    if (utils.isObject(configObj)) {
-
-      config.formElement = (configObj.hasOwnProperty('formName'))
-        ? document.forms[configObject.formName]
-        : null;
-
-      config.onSuccessCallback = (configObj.hasOwnProperty('onSuccess') && utils.isFunction(configObj.onSuccess))
-        ? configObj.onSuccess
-        : null;
-
+  function extendDefaultOptions(configOptions) {
+    if (utils.isObject(configOptions)) {
+      options = utils.extend(defaultOptions, configOptions);
+      options.formElement = document.forms[options.formElement] || null; // replace name string with html form element
     } else {
-      throw 'Not an object.'
+      throw 'Please provide a valid object with config options to validateManager';
     }
   }
 
   function validate(...validationObjects) {
 
-    // get validation object after setup
+    // assign validation objects after initial object modification
     formData.validateObjects = setupValidationObjects(validationObjects);
 
-    // setup placeholders in dom for errors
+    // setup placeholders in dom for error messages
     createErrorPlaceholders(formData.validateObjects);
 
     // initialize form
@@ -55,16 +63,18 @@ var validateManager = function validateManager(configObject) {
   }
 
   function setupValidationObjects(validationObjects) {
-    var validateObjId = createIdForEach(validationObjects),
-        validateObjElements = addDomElementsForEach(validateObjId),
-        validateObjRequired = addRequiredRules(validateObjElements);
-    return addErrorMessages(validateObjRequired);
+    var objWithIds = createIdForEach(validationObjects),
+        objWithElements = addDomElementsForEach(objWithIds),
+        objWithRequiredRules = addRequiredRules(objWithElements),
+        objWithErrorMessages = addErrorMessages(objWithRequiredRules);
+
+    // final validation object with unique ids, html elements, require rules, and error messages
+    return objWithErrorMessages;
   }
 
-
   function init() {
-    config.formElement.addEventListener('change', onChangeHandler, false);
-    config.formElement.addEventListener('submit', onSubmitHandler, false);
+    options.validateOnChange && options.formElement.addEventListener('change', onChangeHandler, false);
+    options.formElement.addEventListener('submit', onSubmitHandler, false);
   }
 
   function onChangeHandler(event) {
@@ -77,81 +87,99 @@ var validateManager = function validateManager(configObject) {
     var requiredFields = getRequiredFields(formData.validateObjects),
         requiredFieldsCompleted = getRequiredFieldsCompleted(requiredFields);
 
-    validateAllRequiredFields(requiredFields);
-
-    if (isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted)
-      && formData.errorQueue.length === 0) {
-
+    if (isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted) && formData.errorQueue.length === 0) {
+      var inputValuesAndNames = getInputValuesAndNames(formData.validateObjects);
+      utils.isFunction(options.onSuccess) && options.onSuccess(inputValuesAndNames);
+      options.resetFormOnSubmit && options.formElement.reset();
+      !options.preventSubmit && options.formElement.submit();
+    } else {
+      validateAllRequiredFields(requiredFields);
     }
+  }
+
+  function getInputValuesAndNames(validateObjects) {
+    return validateObjects.map((validateObject) => ({
+
+      // if input is a node list then get first element name
+      id: validateObject.input.name || validateObject.input[0].name,
+      value: validateObject.input.value
+    }));
   }
 
   function defaultErrorMessages() {
     var errors = {},
-      updateObj = {};
+        template = {};
     return {
       set: function (key, value) {
-        updateObj[key] = value;
+        template[key] = value;
       },
       get: function(key) {
         errors.isAlpha = 'Please use letters only';
         errors.radio = 'Please select an option';
         errors.email = 'Please enter a valid email address';
-        errors.equalTo = `This field is not the same as ${updateObj['equalTo']}`;
-        errors.minLength = `Please enter a minimum of ${updateObj['minLength']} characters`;
-        errors.maxLength = `Please enter a maximum of ${updateObj['maxLength']} characters`;
+        errors.equalTo = `This field is not the same as ${template['equalTo']}`;
+        errors.minLength = `Please enter a minimum of ${template['minLength']} characters`;
+        errors.maxLength = `Please enter a maximum of ${template['maxLength']} characters`;
         errors.number = 'Please enter a valid number';
-        errors.hasValue = 'Please fill out the required field';
+        errors.required = 'Please fill out the required field';
         return errors[key];
       }
     }
   }
 
   function addRequiredRules(validateObjects) {
-    var hasRules,
+    var validateObjHasRules,
         isRequired,
         validateObjectsCopy = [...validateObjects],
-        validateObjectRequiredRules = [];
+        validateObjectsRequired = [];
 
-    validateObjectsCopy.forEach((currentValidateObject) => {
+    validateObjectsCopy.forEach((validateObject) => {
 
-      hasRules = currentValidateObject.hasOwnProperty('rules');
-      isRequired = currentValidateObject.hasOwnProperty('required') && currentValidateObject.required;
+      validateObjHasRules = validateObject.hasOwnProperty('rules');
+      isRequired = validateObject.hasOwnProperty('required') && validateObject.required;
 
-      // assign validation rules. if the validation object is required then add 'hasValue' to rules
-      if (hasRules && isRequired) {
-        utils.extend(currentValidateObject.rules, { hasValue: true });
-      } else if (!hasRules && isRequired) {
-        utils.extend(currentValidateObject, { rules: { hasValue: true } });
+      // assign validation rules. if the validation object is required then add 'required' to rules
+      if (validateObjHasRules && isRequired) {
+        utils.extend(validateObject.rules, { required: true });
+      } else if (!validateObjHasRules && isRequired) {
+        utils.extend(validateObject, { rules: { required: true } });
       }
 
-      validateObjectRequiredRules.push(currentValidateObject);
+      validateObjectsRequired.push(validateObject);
     });
 
-    return validateObjectRequiredRules;
+    return validateObjectsRequired;
   }
 
   function addErrorMessages(validateObjects) {
     var validateObjectsCopy = [...validateObjects],
-      validateObjectsErrors = [],
-      errorMessages = defaultErrorMessages();
+        validateObjectsErrors = [],
+        errorMessages = defaultErrorMessages();
 
     validateObjectsCopy.forEach((validateObject) => {
       var ruleKeys = Object.keys(validateObject.rules);
 
-      validateObject.errorMessages = validateObject.errorMessages || {};
+      validateObject.error = validateObject.error || {};
       ruleKeys.forEach((ruleKey) => {
 
         // protect custom error messages if there's one present
-        if (!validateObject.errorMessages.hasOwnProperty(ruleKey)
-          && utils.isBoolean(validateObject.rules[ruleKey])) {
+        if (!validateObject.error.hasOwnProperty(ruleKey) && utils.isBoolean(validateObject.rules[ruleKey])) {
 
           // add default error messages
-          validateObject.errorMessages[ruleKey] = errorMessages.get(ruleKey);
-        } else if (!validateObject.errorMessages.hasOwnProperty(ruleKey)) {
+          validateObject.error[ruleKey] = {
+            isValid: null,
+            message: errorMessages.get(ruleKey)
+          };
+        } else if (!validateObject.error.hasOwnProperty(ruleKey)) {
 
           // add default error messages with dynamic values
           errorMessages.set(ruleKey, validateObject.rules[ruleKey]);
-          validateObject.errorMessages[ruleKey] = errorMessages.get(ruleKey);
+          validateObject.error[ruleKey] = {
+            isValid: null,
+            message: errorMessages.get(ruleKey)
+          };
+        } else {
+          validateObject.error[ruleKey].isValid = null;
         }
       });
       validateObjectsErrors.push(validateObject);
@@ -161,7 +189,7 @@ var validateManager = function validateManager(configObject) {
 
   function addDomElementsForEach(validateObjects) {
     return validateObjects.map((validateObject) => {
-      return utils.extend(validateObject, { input: config.formElement[validateObject.input] });
+      return utils.extend(validateObject, { input: options.formElement[validateObject.input] });
     });
   }
 
@@ -171,20 +199,20 @@ var validateManager = function validateManager(configObject) {
     });
   }
 
-  function updateQueue() {
+  function updateQueue(queue) {
+    var currentQueue = queue;
     return {
-      add: function (queue, obj) {
-        formData[queue].push(obj);
+      add: function (obj) {
+        formData[currentQueue].push(obj);
       },
-      remove: function(queue, value) {
-        formData[queue] = formData[queue].filter((currentItem) => {
-          return currentItem !== value;
+      remove: function(validateObject) {
+        formData[queue] = formData[currentQueue].filter((currentItem) => {
+          return currentItem.id !== validateObject.id;
         });
       },
-      checkQueue: function(queue, value) {
-        //getValidateObject(inputElement.name)[0]
-        var isInQueue = formData[queue].filter((currentItem) => {
-          return currentItem === value;
+      isItemInQueue: function(validateObject) {
+        var isInQueue = formData[currentQueue].filter((currentItem) => {
+          return currentItem.id === validateObject.id;
         });
         return isInQueue.length === 1;
       }
@@ -197,49 +225,54 @@ var validateManager = function validateManager(configObject) {
     errorElement.style.display = 'block';
   }
 
-  function hideError(id, errorMessage) {
+  function hideError(id) {
     var errorElement = document.querySelector('#error-mgn-' + id);
-    if (errorMessage === errorElement.innerHTML) {
-      errorElement.style.display = 'none';
-    }
+    errorElement.style.display = 'none';
   }
 
   function validateInput(inputElement) {
     var ruleKeys,
-        validateMethods = utils.validateMethods,
         currentValidateObject = getValidateObject(inputElement.name)[0],
         currentValidateRules = currentValidateObject.rules,
-        queue = updateQueue();
+        errorQueue = updateQueue('errorQueue');
 
     ruleKeys = Object.keys(currentValidateRules);
 
     // validate each rule
     ruleKeys.forEach((ruleKey) => {
       var dynamicValidateMethod,
-          isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
-          secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
-          inputValue = (ruleKey === 'radio') ? currentValidateObject.input : inputElement.value;
+        isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
+        secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
+        inputValue = (ruleKey === 'radio') ? currentValidateObject.input : inputElement.value;
 
-      if (utils.isFunction(validateMethods[ruleKey])) {
-        dynamicValidateMethod = validateMethods[ruleKey];
+      if (utils.isFunction(validateMethod[ruleKey])) {
+        dynamicValidateMethod = validateMethod[ruleKey];
       } else {
-        throw '"' + validateMethods[ruleKey] + '" is not a valid method.';
+        throw '"' + validateMethod[ruleKey] + '" is not a valid method.';
       }
 
-      if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue, config.formElement)) {
-        var errorMessageToRemove = currentValidateObject.errorMessages[ruleKey];
-        //if (queue.checkQueue('errorQueue', errorMessageToRemove)) {
-          queue.remove('errorQueue', errorMessageToRemove);
-          hideError(currentValidateObject.id, errorMessageToRemove);
-        //}
+      if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue, options.formElement)) {
+        currentValidateObject.error[ruleKey].isValid = true;
+
+        var errorObject = currentValidateObject.error,
+          isValidMap = Object.keys(errorObject).map((rule) => errorObject[rule].isValid),
+          shouldRemoveError = isValidMap.filter((booleanItem) => !booleanItem).length === 0;
+
+        if (errorQueue.isItemInQueue(currentValidateObject) && shouldRemoveError) {
+          errorQueue.remove(currentValidateObject);
+          hideError(currentValidateObject.id);
+        }
+
       } else {
-        var errorMessageToAdd = currentValidateObject.errorMessages[ruleKey];
-        //if (!queue.checkQueue('errorQueue', errorMessageToAdd)) {
-          queue.add('errorQueue', errorMessageToAdd);
-          showError(currentValidateObject.id, errorMessageToAdd);
-        //}
+        currentValidateObject.error[ruleKey].isValid = false;
+
+        if (!errorQueue.isItemInQueue(currentValidateObject)) {
+          errorQueue.add(currentValidateObject);
+          showError(currentValidateObject.id, currentValidateObject.error[ruleKey].message);
+        } else {
+          showError(currentValidateObject.id, currentValidateObject.error[ruleKey].message);
+        }
       }
-      console.log('error: ',formData.errorQueue);
     });
   }
 
@@ -265,7 +298,7 @@ var validateManager = function validateManager(configObject) {
 
   function getRequiredFieldsCompleted(requiredFields) {
     return requiredFields.filter((validateObject) => {
-      return (utils.validateMethods.hasValue(validateObject.input.value));
+      return (validateMethod.required(validateObject.input.value));
     });
   }
 
@@ -275,8 +308,8 @@ var validateManager = function validateManager(configObject) {
 
   function createErrorPlaceholders(validateObjects) {
     var errorMessageDiv,
-        lastRadioButton,
-        domElementSetup;
+      lastRadioButton,
+      domElementSetup;
 
     validateObjects.forEach((validateObject) => {
       domElementSetup = {
@@ -299,310 +332,49 @@ var validateManager = function validateManager(configObject) {
       }
 
     });
- }
+  }
+  /*
+   * Validation Methods
+   */
+  function required(value) {
+    return !(value.length === 0 || value.trim() == "" || value == null);
+  }
+
+  function number(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
+  function isAlpha(value) {
+    var regExNumber = /[0-9]+/;
+    return !(regExNumber.test(value));
+  }
+
+  function maxLength(value, maxLength) {
+    return (value.length <= maxLength);
+  }
+
+  function minLength(value, minLength) {
+    return (value.length >= minLength);
+  }
+
+  function equalTo(value, elementName, mainForm) {
+    var element = mainForm[elementName];
+    return (value === element.value);
+  }
+
+  function email(email) {
+    var emailRegEx = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRegEx.test(email);
+  }
+
+  function radio(radioNodeList) {
+    for (var i = 0; i < radioNodeList.length; ++i) {
+      if (radioNodeList[i].checked) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 
 };
-// var validateManager = (function() {
-//     "use strict";
-//
-//     var options,
-//         errorMessageDiv,
-//         formElement,
-//         submitButton,
-//         tabOnce,
-//         validationMethods = {},
-//         helperFn = {},
-//
-//         // Default options
-//         defaults = {
-//             formId: null,
-//             successCallback: null,
-//             resetFormOnSubmit: true,
-//             validateOnKeyUp: false
-//         },
-//
-//         // Set unique id
-//         uniqueId = {
-//             id: 0,
-//             createNewId: function() {
-//                 return this.id += 1;
-//             }
-//         },
-//
-//         // Collection of form values
-//         formData = {
-//             successValues: [],
-//             collection: [],
-//             errorMessage: []
-//         },
-//
-//         publicAPI = {
-//             config: config,
-//             init: init,
-//             extend: extend,
-//             method: validationMethods,
-//             helperFn: helperFn
-//         };
-//
-//     return publicAPI;
-//
-//     //::::::::::::::::::::::::::::::://
-//     //:::: Initialize and config :::://
-//     //::::::::::::::::::::::::::::::://
-//
-//     function init(obj) {
-//
-//         // Extend defaults and assign it to options
-//         if (obj && typeof obj === "object") {
-//             options = extend(defaults, obj);
-//         }
-//
-//         // Get form DOM elements
-//         formElement = helperFn.getElementList(options.formId)[0];
-//         submitButton = helperFn.getElementList(options.submitButton)[0];
-//
-//         // Event listeners to handle form validation
-//         if (options.validateOnKeyUp) {
-//             tabOnce = helperFn.oncePerItem();
-//             formElement.addEventListener('keyup', onKeyUpHandler, false);
-//         }
-//
-//         formElement.addEventListener('change', onChangeHandler, false);
-//         formElement.addEventListener('submit', onSubmitHandler, false);
-//         submitButton.disabled = true;
-//
-//         formData.collection.forEach(mergeInputElements);
-//         formData.collection.forEach(createErrorPlaceholders);
-//     }
-//
-//     // Updates the 'formData.collection' array with validation objects
-//     function config(data) {
-//         data.forEach(function(obj) {
-//             if (obj.rules) {
-//                 createMultiValidationObjects(obj);
-//             } else {
-//                 formData.collection.push(obj);
-//             }
-//         });
-//     }
-//
-//     //:::::::::::::::::::::::://
-//     //:::: Event Handlers :::://
-//     //:::::::::::::::::::::::://
-//
-//     function onSubmitHandler(evt) {
-//         evt.preventDefault();
-//         if (isRequiredFieldsCompleted() && formData.errorMessage.length === 0) {
-//             populateValues(function(successValues) {
-//                 options.successCallback(successValues);
-//                 submitButton.disabled = true;
-//                 formData.successValues = [];
-//                 if (options.resetFormOnSubmit) {
-//                     formElement.reset();
-//                 }
-//             });
-//         }
-//     }
-//
-//     function onKeyUpHandler(evt) {
-//         evt.preventDefault();
-//         var keyCode = evt.keyCode || evt.which;
-//
-//         // skip validation on initial tab key press for each form field
-//         if (tabOnce(evt.target.id) && keyCode === 9) {
-//             return;
-//         }
-//
-//         validateCurrentInput(evt.target);
-//         updateSubmitButton();
-//     }
-//
-//     function onChangeHandler(evt) {
-//         evt.preventDefault();
-//         validateCurrentInput(evt.target);
-//         updateSubmitButton();
-//     }
-//
-//     // Replace the input selector with an actual DOM element
-//     function mergeInputElements(obj) {
-//             var inputElement = (obj.name)
-//                 ? document.forms[formElement.id][obj.name]
-//                 : helperFn.getElementList(obj.input)[0];
-//             extend(obj, { input: inputElement, id: uniqueId.createNewId() });
-//     }
-//
-//     function createErrorPlaceholders(inputObject) {
-//         errorMessageDiv = helperFn.createNode({
-//             type: 'div',
-//             attr: {'class': 'error-message', 'id': 'error-mgn-' + inputObject.id, 'style': 'display:none'}
-//         });
-//
-//         if (Object.prototype.toString.call(inputObject.input) === '[object RadioNodeList]') {
-//             var lastElementPosition = inputObject.input.length;
-//             helperFn.insertAfter(errorMessageDiv, inputObject.input[lastElementPosition - 1]);
-//         } else {
-//             helperFn.insertAfter(errorMessageDiv, inputObject.input);
-//         }
-//     }
-//
-//     // extends an object with new properties
-//     function extend(source, properties) {
-//         var property;
-//         for (property in properties) {
-//             if (properties.hasOwnProperty(property)) {
-//                 source[property] = properties[property];
-//             }
-//         }
-//         return source;
-//     }
-//
-//     // returns an array of objects that's required
-//     function getRequiredFields() {
-//         return formData.collection.filter(function(inputObject) {
-//             return (inputObject.required);
-//         });
-//     }
-//
-//     // returns an array of required objects that has been filled out
-//     function getRequiredFieldsCompleted() {
-//         return getRequiredFields().filter(function(inputObject) {
-//             return (helperFn.hasValue(inputObject.input.value));
-//         });
-//     }
-//
-//     // verify if required fields are filled out
-//     function isRequiredFieldsCompleted() {
-//         return (getRequiredFieldsCompleted().length === getRequiredFields().length);
-//     }
-//
-//     // Enable submit button if required fields are filled out and there are no errors.
-//     function updateSubmitButton() {
-//         submitButton.disabled = (isRequiredFieldsCompleted() && formData.errorMessage.length === 0) ? false : true;
-//     }
-//
-//     // Populate 'formData.successValues' with input values that has been validated then invoke the callback function
-//     function populateValues(callback) {
-//         var currentInputId = '';
-//         formData.collection.forEach(function(inputObject) {
-//             if (currentInputId != inputObject.input.id) {
-//                 formData.successValues.push({
-//                     id: inputObject.input.id || inputObject.name,
-//                     value: inputObject.input.value
-//                 });
-//                 currentInputId = inputObject.input.id;
-//             }
-//         });
-//         callback(formData.successValues);
-//     }
-//
-//     // Returns an array of validation objects that matches the input id provided
-//     function inputLookUp(id) {
-//         return formData.collection.filter(function(obj) {
-//             return (obj.input.id == id);
-//         });
-//     }
-//
-//     function nameLookUp(name) {
-//         return formData.collection.filter(function(obj) {
-//             return (obj.name == name);
-//         })
-//     }
-//
-//     // Validates the current input that matches the provided id
-//     function validateCurrentInput(element) {
-//         var inputObj = (element.getAttribute('type') === 'radio')
-//             ? nameLookUp(element.name)
-//             : inputLookUp(element.id);
-//
-//         if (inputObj.length > 1) {
-//             inputObj.forEach(function(currInputObj) {
-//
-//                 validateInput(currInputObj);
-//             });
-//         } else {
-//             validateInput(inputObj[0]);
-//         }
-//     }
-//
-//     // Validation objects with 'rules' property will be pushed to the 'formData.collection' array separately
-//     function createMultiValidationObjects(obj) {
-//         obj.rules.forEach(function(inputObj) {
-//             formData.collection.push(extend({
-//                 method: inputObj.method,
-//                 error: inputObj.error
-//             }, obj));
-//         });
-//     }
-//
-//     function isRadio(object) {
-//         return (Object.prototype.toString.call(object) === '[object RadioNodeList]')
-//     }
-//
-//     function assignValue(obj) {
-//         var keys = Object.keys(obj);
-//         for(var i = 0; i < keys.length; i++) {
-//             if (keys[i] === 'maxLength') {
-//                 return { currLength: obj.input.value.length, maxLength: obj.maxLength };
-//             }
-//             if (keys[i] === 'minLength') {
-//                 return { currLength: obj.input.value.length, minLength: obj.minLength };
-//             }
-//             if (keys[i] === 'equalTo') {
-//                 return { currValue: obj.input.value, selector: obj.equalTo };
-//             }
-//              if (keys[i] === 'name'){
-//                  return obj.input;
-//              }
-//         }
-//         return obj.input.value;
-//     }
-//
-//     // validates the input field
-//     function validateInput(obj) {
-//         var value = assignValue(obj);
-//         if (obj.method(value)) {
-//             hideErrorMessage(obj);
-//         } else {
-//             insertErrorMessage(obj);
-//         }
-//     }
-//
-//     function hideErrorMessage(obj) {
-//         var errorPlaceholder = document.querySelector('#error-mgn-' + obj.id);
-//         if (formData.errorMessage.indexOf(obj.error) >= 0) {
-//
-//             // update error message array
-//             formData.errorMessage = formData.errorMessage.filter(function(errorMessage) {
-//                 return errorMessage != obj.error;
-//             });
-//
-//             errorPlaceholder.style.display = 'none';
-//             if (!isRadio(obj.input)) {
-//                 helperFn.removeClass(obj.input, 'error-highlight');
-//             }
-//         } else {
-//             errorPlaceholder.style.display = 'none';
-//             if (!isRadio(obj.input)) {
-//                 helperFn.removeClass(obj.input, 'error-highlight');
-//             }
-//         }
-//     }
-//
-//     function insertErrorMessage(obj) {
-//         var errorPlaceholder = document.querySelector('#error-mgn-' + obj.id);
-//         if (formData.errorMessage.indexOf(obj.error) < 0) {
-//             formData.errorMessage.push(obj.error);
-//             helperFn.html(errorPlaceholder, obj.error);
-//             errorPlaceholder.style.display = 'block';
-//             if (!isRadio(obj.input)) {
-//                 helperFn.addClass(obj.input, 'error-highlight');
-//             }
-//         } else {
-//             errorPlaceholder.style.display = 'block';
-//              if (!isRadio(obj.input)) {
-//                 helperFn.addClass(obj.input, 'error-highlight');
-//             }
-//         }
-//     }
-// })();
