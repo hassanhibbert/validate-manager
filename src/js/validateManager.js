@@ -1,55 +1,69 @@
 var validateManager = function validateManager(configOptions) {
   'use strict';
 
-  var utils = helperUtils(),
+  var
+      // helper utilities
+      utils = helperUtils(),
 
-    // defaults
-    defaultOptions = {
-      onSuccess: null,
-      formElement: null,
-      preventSubmit: false,
-      validateOnChange: true,
-      resetFormOnSubmit: true,
-    },
+      // defaults
+      defaultOptions = {
+        onSuccess: null,
+        formElement: null,
+        preventSubmit: false,
+        validateOnChange: true,
+        resetFormOnSubmit: true,
+      },
 
-    // validation methods
-    validateMethod = {
-      radio: radio,
-      email: email,
-      number: number,
-      equalTo: equalTo,
-      isAlpha: isAlpha,
-      required: required,
-      maxLength: maxLength,
-      minLength: minLength,
-    },
-    options = {},
+      options = {},
 
-    // object for storing form data
-    formData = {
-      validateObjects: null,
-      errorQueue: []
-    },
+      // validation methods
+      validateMethod = {
+        radio: radio,
+        email: email,
+        digits: digits,
+        equalTo: equalTo,
+        lettersOnly: lettersOnly,
+        required: required,
+        maxLength: maxLength,
+        minLength: minLength,
+      },
 
-    // public api
-    publicAPI = {
-      validate: validate
-    };
+      // error template for string placeholders
+      // for dynamic error messages
+      stringTemplate = {},
+
+      // default error message
+      errors = {
+        lettersOnly: 'Please use letters only.',
+        radio: 'Please select an option.',
+        email: 'Please enter a valid email address.',
+        equalTo: 'Please enter the same value.',
+        digits: 'Please enter a valid digit.',
+        required: 'This field is required.',
+        minLength: `Please enter a minimum of ${stringTemplate['minLength']} characters.`,
+        maxLength: `Please enter a maximum of ${stringTemplate['maxLength']} characters.`
+      },
+
+      // object for storing form data
+      formData = {
+        validateObjects: null,
+        errorQueue: []
+      },
+
+      // public api
+      publicAPI = {
+        validate: validate,
+        addMethod: addMethod
+      };
 
   // extend options
   extendDefaultOptions(configOptions);
 
   return publicAPI;
 
+  //****************//
 
-  /*
-   * helper methods
-   */
-
-  function helperUtils(){var e={};return e.hasClass=function(e,t){return e.className&&new RegExp("(^|\\s)"+t+"(\\s|$)").test(e.className)},e.addClass=function(e,t){e.className.indexOf(t)===-1&&(""!=e.className&&(t=" "+t),e.className+=t)},e.removeClass=function(e,t){if(e.className.indexOf(t)!=-1){var n=new RegExp("(\\s|^)"+t+"(\\s|$)");e.className=e.className.replace(n," ").trim()}},e.getElementList=function(e){return"string"==typeof e?Array.prototype.slice.call(document.querySelectorAll(e)):"undefined"==typeof e||e instanceof Array?e:[e]},e.createNode=function(e){var t=e.type,n=e.attr,r=e.content,o=document.createElement(t);return n&&Object.keys(n).forEach(function(e){o.setAttribute(e,n[e])}),r&&r.forEach(function(e){"string"==typeof e?o.appendChild(document.createTextNode(e)):o.appendChild(e)}),o},e.insertAfter=function(e,t){var n=t.parentNode;n.insertBefore(e,t.nextSibling)},e.html=function(e,t){e.innerHTML=t},e.exists=function(e){return document.querySelectorAll(e).length>0},e.removeNode=function(e){e.parentNode.removeChild(e)},e.extend=function(e,t){var n;for(n in t)t.hasOwnProperty(n)&&(e[n]=t[n]);return e},e.isBoolean=function(e){return"boolean"==typeof e},e.isRadioList=function(e){return"[object RadioNodeList]"===Object.prototype.toString.call(e)},e.isObject=function(e){return"[object Object]"===Object.prototype.toString.call(e)},e.isFunction=function(e){return"function"==typeof e},e}
-
-  //////////////////////
-
+  // extend default option and assign to `options`
   function extendDefaultOptions(configOptions) {
     if (utils.isObject(configOptions)) {
       options = utils.extend(defaultOptions, configOptions);
@@ -71,31 +85,35 @@ var validateManager = function validateManager(configOptions) {
     init();
   }
 
+  // update validation object with unique ids, html elements, require rules, and error messages
   function setupValidationObjects(validationObjects) {
     var objWithIds = createIdForEach(validationObjects),
         objWithElements = addDomElementsForEach(objWithIds),
         objWithRequiredRules = addRequiredRules(objWithElements),
         objWithErrorMessages = addErrorMessages(objWithRequiredRules);
-
-    // final validation object with unique ids, html elements, require rules, and error messages
     return objWithErrorMessages;
   }
 
+  // initialize listeners for current form
   function init() {
     options.validateOnChange && options.formElement.addEventListener('change', onChangeHandler, false);
     options.formElement.addEventListener('submit', onSubmitHandler, false);
   }
 
+  // validate on change
   function onChangeHandler(event) {
     event.preventDefault();
     validateInput(event.target);
   }
 
+  // validate on submit
   function onSubmitHandler(event) {
     event.preventDefault();
+
     var requiredFields = getRequiredFields(formData.validateObjects),
         requiredFieldsCompleted = getRequiredFieldsCompleted(requiredFields);
 
+    // verify if required fields are completed and there are not errors in the error queue
     if (isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted) && formData.errorQueue.length === 0) {
       var inputValuesAndNames = getInputValuesAndNames(formData.validateObjects);
       utils.isFunction(options.onSuccess) && options.onSuccess(inputValuesAndNames);
@@ -106,34 +124,31 @@ var validateManager = function validateManager(configOptions) {
     }
   }
 
+  // get key/value pair for `onSuccess` callback
   function getInputValuesAndNames(validateObjects) {
-    return validateObjects.map((validateObject) => ({
+    var key;
+    return validateObjects.reduce((data, validateObject) => {
 
       // if input is a node list then get first element name
-      id: validateObject.input.name || validateObject.input[0].name,
-      value: validateObject.input.value
-    }));
+      key = validateObject.input.name || validateObject.input[0].name;
+
+      data[key] = validateObject.input.value;
+      return data;
+    }, {});
   }
 
-  function defaultErrorMessages() {
-    var errors = {},
-        template = {};
+  function errorMessages() {
     return {
       set: function (key, value) {
-        template[key] = value;
+        stringTemplate[key] = value;
       },
       get: function(key) {
-        errors.isAlpha = 'Please use letters only';
-        errors.radio = 'Please select an option';
-        errors.email = 'Please enter a valid email address';
-        errors.equalTo = `This field is not the same as ${template['equalTo']}`;
-        errors.minLength = `Please enter a minimum of ${template['minLength']} characters`;
-        errors.maxLength = `Please enter a maximum of ${template['maxLength']} characters`;
-        errors.number = 'Please enter a valid number';
-        errors.required = 'Please fill out the required field';
         return errors[key];
+      },
+      add: function(name, message) {
+        errors[name] = message;
       }
-    }
+    };
   }
 
   function addRequiredRules(validateObjects) {
@@ -163,36 +178,45 @@ var validateManager = function validateManager(configOptions) {
   function addErrorMessages(validateObjects) {
     var validateObjectsCopy = [...validateObjects],
         validateObjectsErrors = [],
-        errorMessages = defaultErrorMessages();
+        errorMessage = errorMessages();
 
     validateObjectsCopy.forEach((validateObject) => {
       var ruleKeys = Object.keys(validateObject.rules);
 
       validateObject.error = validateObject.error || {};
+
       ruleKeys.forEach((ruleKey) => {
 
-        // protect custom error messages if there's one present
         if (!validateObject.error.hasOwnProperty(ruleKey) && utils.isBoolean(validateObject.rules[ruleKey])) {
 
           // add default error messages
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: errorMessages.get(ruleKey)
+            message: errorMessage.get(ruleKey)
           };
         } else if (!validateObject.error.hasOwnProperty(ruleKey)) {
 
           // add default error messages with dynamic values
-          errorMessages.set(ruleKey, validateObject.rules[ruleKey]);
+          errorMessage.set(ruleKey, validateObject.rules[ruleKey]);
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: errorMessages.get(ruleKey)
+            message: errorMessage.get(ruleKey)
           };
-        } else {
-          validateObject.error[ruleKey].isValid = null;
         }
+
+        // overwrite default messages to add custom ones
+        if (validateObject.hasOwnProperty('message')) {
+          validateObject.error[ruleKey].message = validateObject.message[ruleKey];
+        }
+
       });
+
+      // message property no longer needed
+      delete validateObject.message;
+
       validateObjectsErrors.push(validateObject);
     });
+
     return validateObjectsErrors;
   }
 
@@ -200,6 +224,15 @@ var validateManager = function validateManager(configOptions) {
     return validateObjects.map((validateObject) => {
       return utils.extend(validateObject, { input: options.formElement[validateObject.input] });
     });
+  }
+
+  function addMethod(methodName, fn, message) {
+    if (!validateMethod.hasOwnProperty(methodName)) {
+      validateMethod[methodName] = fn;
+      message && errorMessages().add(methodName, message);
+    } else {
+      console.warn(`Method '${methodName}' has already been defined.`);
+    }
   }
 
   function validateAllRequiredFields(requiredFields) {
@@ -346,17 +379,17 @@ var validateManager = function validateManager(configOptions) {
   /*
    * Validation Methods
    */
+
   function required(value) {
     return !(value.length === 0 || value.trim() == "" || value == null);
   }
 
-  function number(n) {
+  function digits(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
   }
 
-  function isAlpha(value) {
-    var regExNumber = /[0-9]+/;
-    return !(regExNumber.test(value));
+  function lettersOnly(value) {
+    return /^[a-z]+$/i.test(value);
   }
 
   function maxLength(value, maxLength) {
@@ -386,5 +419,60 @@ var validateManager = function validateManager(configOptions) {
     return false;
   }
 
+  /*
+   * helper methods
+   */
+
+  function helperUtils() {
+    var helperMethod = {},
+        objProto = Object.prototype,
+        toString = objProto.toString;
+
+    helperMethod.insertAfter = (newNode, element) => { element.parentNode.insertBefore(newNode, element.nextSibling) };
+    helperMethod.html = (element, content) => { element.innerHTML = content };
+    helperMethod.removeNode = (element) => { element.parentNode.removeChild(element) };
+    helperMethod.exists = (selector) => document.querySelectorAll(selector).length > 0;
+    helperMethod.isBoolean = (obj) => toString.call(obj) === '[object Boolean]';
+    helperMethod.isRadioList = (obj) => toString.call(obj) === '[object RadioNodeList]';
+    helperMethod.isObject = (obj) => toString.call(obj) === '[object Object]';
+    helperMethod.isFunction = (obj) => toString.call(obj) === '[object Function]';
+    helperMethod.isString = (obj) => toString.call(obj) === '[object String]';
+
+    helperMethod.createNode = (element) => {
+      var elemType = element.type,
+          attributes = element.attr,
+          innerContent = element.content,
+          el = document.createElement(elemType);
+
+      if (attributes) {
+        Object.keys(attributes).forEach((attrName) => {
+          el.setAttribute(attrName, attributes[attrName]);
+        });
+      }
+
+      if (innerContent) {
+        innerContent.forEach((element) => {
+          if (typeof element === 'string') {
+            el.appendChild(document.createTextNode(element));
+          } else {
+            el.appendChild(element);
+          }
+        });
+      }
+      return el;
+    };
+
+    helperMethod.extend = (source, properties) => {
+      var property;
+      for (property in properties) {
+        if (properties.hasOwnProperty(property)) {
+          source[property] = properties[property];
+        }
+      }
+      return source;
+    };
+
+    return helperMethod;
+  }
 
 };
