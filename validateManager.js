@@ -36,7 +36,7 @@ var validateManager = function validateManager(configOptions) {
       },
 
       // default error message
-      errors = {
+      errorMessages = {
         lettersOnly: 'Please use letters only.',
         radio: 'Please select an option.',
         email: 'Please enter a valid email address.',
@@ -150,16 +150,6 @@ var validateManager = function validateManager(configOptions) {
     }, {});
   }
 
-  function errorMessages() {
-    return {
-      get: function (key) {
-        return errors[key];
-      },
-      add: function (name, message) {
-        errors[name] = message;
-      }
-    };
-  }
 
   // add required rules if object is required
   function addRequiredRules(validateObjects) {
@@ -187,7 +177,6 @@ var validateManager = function validateManager(configOptions) {
 
   // add default and custom error messages
   function addErrorMessages(validateObjects) {
-    var errorMessage = errorMessages();
 
     validateObjects.forEach((validateObject) => {
       var ruleKeys = Object.keys(validateObject.rules);
@@ -200,14 +189,14 @@ var validateManager = function validateManager(configOptions) {
           // add default error messages
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: errorMessage.get(ruleKey)
+            message: errorMessages[ruleKey]
           };
         } else if (!validateObject.error.hasOwnProperty(ruleKey)) {
 
           // add default error messages with dynamic values
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: format(errorMessage.get(ruleKey), validateObject.rules[ruleKey])
+            message: format(errorMessages[ruleKey], validateObject.rules[ruleKey])
           };
         }
 
@@ -220,8 +209,6 @@ var validateManager = function validateManager(configOptions) {
       // message property no longer needed after overwriting the default errors
       delete validateObject.message;
     });
-
-      console.log('error added: ', validateObjects);
   }
 
   // replace each object `validateObjects.input` string name withe the html form element
@@ -241,7 +228,7 @@ var validateManager = function validateManager(configOptions) {
   function addMethod(methodName, fn, message) {
     if (!validateMethod.hasOwnProperty(methodName)) {
       validateMethod[methodName] = fn;
-      message && errorMessages().add(methodName, message);
+      errorMessages[methodName] = (message) ? message : '';
     } else {
       console.warn(`Method '${methodName}' has already been defined.`);
     }
