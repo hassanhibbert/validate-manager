@@ -2,8 +2,8 @@ var myForm = validateManager({
   formElement: 'myForm',
   preventSubmit: true,
   onSuccess: function (data) {
-    console.log('form complete');
-    console.log('data from form: ', data);
+    console.log('data: ', data);
+    document.querySelector('#success').innerHTML = JSON.stringify(data);
   }
 });
 
@@ -15,10 +15,6 @@ myForm.validate({
   input: 'name',
   required: true,
   rules: { lettersOnly: true },
-  message: {
-    required: 'my custom message required',
-    lettersOnly: 'my custom letters only'
-  }
 }, {
   input: 'initial',
   rules: { maxLength: 2, minLength: 2 }
@@ -30,7 +26,10 @@ myForm.validate({
   rules: { isFive: true }
 }, {
   input: 'car',
-  required: true
+  required: true,
+  message: {
+    required: 'custom message: please fill out this field',
+  }
 });
 
 

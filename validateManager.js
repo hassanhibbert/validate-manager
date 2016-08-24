@@ -1,3 +1,10 @@
+/*
+ * validateManager: A JavaScript form validator
+ * By Hassan Hibbert <http://hassanhibbert.com/>
+ * Copyright 2016 Hassan Hibbert, under the MIT License
+ */
+
+
 var validateManager = function validateManager(configOptions) {
   'use strict';
 
@@ -28,10 +35,6 @@ var validateManager = function validateManager(configOptions) {
         minLength: minLength,
       },
 
-      // error template for string placeholders
-      // for dynamic error messages
-      stringTemplate = {},
-
       // default error message
       errors = {
         lettersOnly: 'Please use letters only.',
@@ -40,8 +43,8 @@ var validateManager = function validateManager(configOptions) {
         equalTo: 'Please enter the same value.',
         digits: 'Please enter a valid digit.',
         required: 'This field is required.',
-        minLength: `Please enter a minimum of ${stringTemplate['minLength']} characters.`,
-        maxLength: `Please enter a maximum of ${stringTemplate['maxLength']} characters.`
+        minLength: 'Please enter a minimum of {0} characters.',
+        maxLength: 'Please enter a maximum of {0} characters.',
       },
 
       // object for storing form data
@@ -67,7 +70,6 @@ var validateManager = function validateManager(configOptions) {
   function extendDefaultOptions(configOptions) {
     if (utils.isObject(configOptions)) {
       options = utils.extend(defaultOptions, configOptions);
-      options.formElement = document.forms[options.formElement] || null; // replace name string with html form element
     } else {
       throw 'Please provide a valid object with config options to validateManager';
     }
@@ -75,7 +77,10 @@ var validateManager = function validateManager(configOptions) {
 
   function validate(...validationObjects) {
 
-    // assign validation objects after initial object modification
+    // overwrite `options.formElement` string name selector with the html form element
+    options.formElement = document.forms[options.formElement];
+
+    // assign validation objects after each object has been updated
     formData.validateObjects = updateValidateObj(validationObjects);
 
     // setup placeholders in dom for error messages
@@ -85,13 +90,19 @@ var validateManager = function validateManager(configOptions) {
     init();
   }
 
-  // update validation object with unique ids, html elements, require rules, and error messages
+  // update validation objects with unique ids, html input elements, additional rules, and error messages
   function updateValidateObj(validationObjects) {
-    var updateValidationMethods = [createIdForEach, addDomElementsForEach, addRequiredRules, addErrorMessages];
-    updateValidationMethods.forEach((updateFunction) => {
-      updateFunction(validationObjects);
+
+    // collection of methods to modify each validation object
+    var updateMethods = [
+        createUniqueIds, addInputElements, addRequiredRules, addErrorMessages
+    ];
+
+    updateMethods.forEach((updateMethod) => {
+      updateMethod(validationObjects);
     });
-    return validationObjects;
+
+    return validationObjects; // array with updated validate objects
   }
 
   // initialize listeners for current form
@@ -111,12 +122,14 @@ var validateManager = function validateManager(configOptions) {
     event.preventDefault();
 
     var requiredFields = getRequiredFields(formData.validateObjects),
-        requiredFieldsCompleted = getRequiredFieldsCompleted(requiredFields);
+        requiredFieldsCompleted = getRequiredFieldsCompleted(requiredFields),
+        isErrorQueueEmpty = formData.errorQueue.length === 0,
+        isRequiredFieldsCompleted = requiredFieldsCompleted.length === requiredFields.length;
 
     // verify if required fields are completed and there are not errors in the error queue
-    if (isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted) && formData.errorQueue.length === 0) {
-      var inputValuesAndNames = getInputValuesAndNames(formData.validateObjects);
-      utils.isFunction(options.onSuccess) && options.onSuccess(inputValuesAndNames);
+    if (isRequiredFieldsCompleted && isErrorQueueEmpty) {
+      var inputKeyValues = getInputKeyValues(formData.validateObjects);
+      utils.isFunction(options.onSuccess) && options.onSuccess(inputKeyValues);
       options.resetFormOnSubmit && options.formElement.reset();
       !options.preventSubmit && options.formElement.submit();
     } else {
@@ -125,7 +138,7 @@ var validateManager = function validateManager(configOptions) {
   }
 
   // get key/value pair for `onSuccess` callback
-  function getInputValuesAndNames(validateObjects) {
+  function getInputKeyValues(validateObjects) {
     var key;
     return validateObjects.reduce((data, validateObject) => {
 
@@ -139,54 +152,49 @@ var validateManager = function validateManager(configOptions) {
 
   function errorMessages() {
     return {
-      set: function (key, value) {
-        stringTemplate[key] = value;
-      },
-      get: function(key) {
+      get: function (key) {
         return errors[key];
       },
-      add: function(name, message) {
+      add: function (name, message) {
         errors[name] = message;
       }
     };
   }
 
+  // add required rules if object is required
   function addRequiredRules(validateObjects) {
-    var validateObjHasRules,
-        isRequired,
-        validateObjectsCopy = [...validateObjects],
-        validateObjectsRequired = [];
+    var validateObjHasRules, isRequired;
 
-    validateObjectsCopy.forEach((validateObject) => {
-
+    validateObjects.forEach((validateObject) => {
       validateObjHasRules = validateObject.hasOwnProperty('rules');
       isRequired = validateObject.hasOwnProperty('required') && validateObject.required;
 
-      // assign validation rules. if the validation object is required then add 'required' to rules
       if (validateObjHasRules && isRequired) {
         utils.extend(validateObject.rules, { required: true });
       } else if (!validateObjHasRules && isRequired) {
         utils.extend(validateObject, { rules: { required: true } });
       }
-
-      validateObjectsRequired.push(validateObject);
     });
-
-    return validateObjectsRequired;
   }
 
-  function addErrorMessages(validateObjects) {
-    var validateObjectsCopy = [...validateObjects],
-        validateObjectsErrors = [],
-        errorMessage = errorMessages();
+  // formats dynamic error messages
+  function format(string, value) {
+    var stringArray = String.prototype.split.call(string, ' '),
+        position = stringArray.indexOf('{0}');
+    stringArray[position] = value;
+    return stringArray.join(' ');
+  }
 
-    validateObjectsCopy.forEach((validateObject) => {
+  // add default and custom error messages
+  function addErrorMessages(validateObjects) {
+    var errorMessage = errorMessages();
+
+    validateObjects.forEach((validateObject) => {
       var ruleKeys = Object.keys(validateObject.rules);
 
       validateObject.error = validateObject.error || {};
 
       ruleKeys.forEach((ruleKey) => {
-
         if (!validateObject.error.hasOwnProperty(ruleKey) && utils.isBoolean(validateObject.rules[ruleKey])) {
 
           // add default error messages
@@ -197,10 +205,9 @@ var validateManager = function validateManager(configOptions) {
         } else if (!validateObject.error.hasOwnProperty(ruleKey)) {
 
           // add default error messages with dynamic values
-          errorMessage.set(ruleKey, validateObject.rules[ruleKey]);
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: errorMessage.get(ruleKey)
+            message: format(errorMessage.get(ruleKey), validateObject.rules[ruleKey])
           };
         }
 
@@ -208,24 +215,29 @@ var validateManager = function validateManager(configOptions) {
         if (validateObject.hasOwnProperty('message')) {
           validateObject.error[ruleKey].message = validateObject.message[ruleKey];
         }
-
       });
 
-      // message property no longer needed
+      // message property no longer needed after overwriting the default errors
       delete validateObject.message;
-
-      validateObjectsErrors.push(validateObject);
     });
 
-    return validateObjectsErrors;
+      console.log('error added: ', validateObjects);
   }
 
-  function addDomElementsForEach(validateObjects) {
-    return validateObjects.map((validateObject) => {
-      return utils.extend(validateObject, { input: options.formElement[validateObject.input] });
+  // replace each object `validateObjects.input` string name withe the html form element
+  function addInputElements(validateObjects) {
+    validateObjects.forEach((validateObject) => {
+       utils.extend(validateObject, { input: options.formElement[validateObject.input] });
     });
   }
 
+  function createUniqueIds(validateObjects) {
+    validateObjects.forEach((validateObject, index) => {
+      utils.extend(validateObject, { id: index });
+    });
+  }
+
+  // add custom validation methods
   function addMethod(methodName, fn, message) {
     if (!validateMethod.hasOwnProperty(methodName)) {
       validateMethod[methodName] = fn;
@@ -290,12 +302,14 @@ var validateManager = function validateManager(configOptions) {
       if (utils.isFunction(validateMethod[ruleKey])) {
         dynamicValidateMethod = validateMethod[ruleKey];
       } else {
-        throw '"' + validateMethod[ruleKey] + '" is not a valid method.';
+        throw ` "${ruleKey}" is not a valid rule.`;
       }
 
       if (currentValidateRules[ruleKey] && dynamicValidateMethod(inputValue, secondArgValue, options.formElement)) {
         currentValidateObject.error[ruleKey].isValid = true;
 
+        // checks if each error object flag `isValid` is set true be for proceeding to
+        // remove the object from `formDate.errorQueue`
         var errorObject = currentValidateObject.error,
           isValidMap = Object.keys(errorObject).map((rule) => errorObject[rule].isValid),
           shouldRemoveError = isValidMap.filter((booleanItem) => !booleanItem).length === 0;
@@ -326,12 +340,6 @@ var validateManager = function validateManager(configOptions) {
     });
   }
 
-  function createIdForEach(validateObjects) {
-    return validateObjects.map((validateObject, index) => {
-      return utils.extend(validateObject, { id: index });
-    });
-  }
-
   function getRequiredFields(validateObj) {
     return validateObj.filter((validateObject) => {
       return (validateObject.required);
@@ -344,14 +352,8 @@ var validateManager = function validateManager(configOptions) {
     });
   }
 
-  function isRequiredFieldsCompleted(requiredFields, requiredFieldsCompleted) {
-    return (requiredFieldsCompleted.length === requiredFields.length);
-  }
-
   function createErrorPlaceholders(validateObjects) {
-    var errorMessageDiv,
-      lastRadioButton,
-      domElementSetup;
+    var errorMessageDiv, lastRadioButton, domElementSetup;
 
     validateObjects.forEach((validateObject) => {
       domElementSetup = {
