@@ -87,11 +87,11 @@ var validateManager = function validateManager(configOptions) {
 
   // update validation object with unique ids, html elements, require rules, and error messages
   function updateValidateObj(validationObjects) {
-    var updateValidationMethods = [createIdForEach, addDomElementsForEach, addRequiredRules, addErrorMessages],
-        updatedValidateObj = updateValidationMethods.reduce((acc, updateFunction) => {
-          return updateFunction(validationObjects);
-        }, []);
-    return updatedValidateObj;
+    var updateValidationMethods = [createIdForEach, addDomElementsForEach, addRequiredRules, addErrorMessages];
+    updateValidationMethods.forEach((updateFunction) => {
+      updateFunction(validationObjects);
+    });
+    return validationObjects;
   }
 
   // initialize listeners for current form
