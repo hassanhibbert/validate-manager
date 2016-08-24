@@ -76,7 +76,7 @@ var validateManager = function validateManager(configOptions) {
   function validate(...validationObjects) {
 
     // assign validation objects after initial object modification
-    formData.validateObjects = setupValidationObjects(validationObjects);
+    formData.validateObjects = updateValidateObj(validationObjects);
 
     // setup placeholders in dom for error messages
     createErrorPlaceholders(formData.validateObjects);
@@ -86,12 +86,12 @@ var validateManager = function validateManager(configOptions) {
   }
 
   // update validation object with unique ids, html elements, require rules, and error messages
-  function setupValidationObjects(validationObjects) {
-    var objWithIds = createIdForEach(validationObjects),
-        objWithElements = addDomElementsForEach(objWithIds),
-        objWithRequiredRules = addRequiredRules(objWithElements),
-        objWithErrorMessages = addErrorMessages(objWithRequiredRules);
-    return objWithErrorMessages;
+  function updateValidateObj(validationObjects) {
+    var updateValidationMethods = [createIdForEach, addDomElementsForEach, addRequiredRules, addErrorMessages],
+        updatedValidateObj = updateValidationMethods.reduce((acc, updateFunction) => {
+          return updateFunction(validationObjects);
+        }, []);
+    return updatedValidateObj;
   }
 
   // initialize listeners for current form
