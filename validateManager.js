@@ -168,11 +168,10 @@ var validateManager = function validateManager(configOptions) {
   }
 
   // formats dynamic error messages
-  function format(string, value) {
-    var stringArray = String.prototype.split.call(string, ' '),
-        position = stringArray.indexOf('{0}');
-    stringArray[position] = value;
-    return stringArray.join(' ');
+  function formatStringTemplate(string, ...values) {
+    return string.replace(/{(.*?)}/g, (match, templateIndex) => {
+      return values[templateIndex];
+    });
   }
 
   // add default and custom error messages
@@ -196,7 +195,7 @@ var validateManager = function validateManager(configOptions) {
           // add default error messages with dynamic values
           validateObject.error[ruleKey] = {
             isValid: null,
-            message: format(errorMessages[ruleKey], validateObject.rules[ruleKey])
+            message: formatStringTemplate(errorMessages[ruleKey], validateObject.rules[ruleKey])
           };
         }
 
