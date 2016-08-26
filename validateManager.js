@@ -185,7 +185,7 @@ var validateManager = function validateManager(configOptions) {
     validateObjects.forEach((validateObject) => {
       var ruleKeys = Object.keys(validateObject.rules);
 
-      validateObject.error = validateObject.error || {};
+      validateObject.error = {};
 
       ruleKeys.forEach((ruleKey) => {
         if (!validateObject.error.hasOwnProperty(ruleKey) && utils.isBoolean(validateObject.rules[ruleKey])) {
