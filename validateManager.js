@@ -282,6 +282,10 @@ var validateManager = function validateManager(configOptions) {
     errorElement.style.display = 'none';
   }
 
+  function getInputValue(validationObject) {
+    return (utils.isNodeList(validationObject.input)) ? validationObject.input : validationObject.input.value;
+  }
+
   function validateInput(inputElement) {
     var ruleKeys,
         currentValidateObject = getValidateObject(inputElement)[0],
@@ -293,9 +297,9 @@ var validateManager = function validateManager(configOptions) {
     // validate each rule
     ruleKeys.forEach((ruleKey) => {
       var dynamicValidateMethod,
-        isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
-        secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
-        inputValue = (utils.isNodeList(currentValidateObject.input)) ? currentValidateObject.input : inputElement.value;
+          isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
+          secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
+          inputValue = getInputValue(currentValidateObject);
 
       if (utils.isFunction(validateMethod[ruleKey])) {
         dynamicValidateMethod = validateMethod[ruleKey];
@@ -345,9 +349,7 @@ var validateManager = function validateManager(configOptions) {
 
   function getRequiredFieldsCompleted(requiredFields) {
     return requiredFields.filter((validateObject) => {
-      var value = (utils.isNodeList(validateObject.input))
-        ? validateObject.input
-        : validateObject.input.value;
+      var value = getInputValue(validateObject);
       return (validateMethod.required(value));
     });
   }
@@ -404,7 +406,9 @@ var validateManager = function validateManager(configOptions) {
   }
 
   function maxLength(value, maxLength) {
-    return (value.length <= maxLength);
+    return (utils.isNodeList(value))
+      ? utils.getCheckedValues(value).length <= maxLength
+      : value.length <= maxLength;
   }
 
   function minLength(value, minLength) {
@@ -431,17 +435,6 @@ var validateManager = function validateManager(configOptions) {
     var helperMethod = {},
         objProto = Object.prototype,
         toString = objProto.toString;
-
-    helperMethod.insertAfter = (newNode, element) => { element.parentNode.insertBefore(newNode, element.nextSibling) };
-    helperMethod.html = (element, content) => { element.innerHTML = content };
-    helperMethod.removeNode = (element) => { element.parentNode.removeChild(element) };
-    helperMethod.exists = (selector) => document.querySelectorAll(selector).length > 0;
-    helperMethod.isBoolean = (obj) => toString.call(obj) === '[object Boolean]';
-    helperMethod.isNodeList = (obj) => toString.call(obj) === '[object RadioNodeList]';
-    helperMethod.isObject = (obj) => toString.call(obj) === '[object Object]';
-    helperMethod.isFunction = (obj) => toString.call(obj) === '[object Function]';
-    helperMethod.isString = (obj) => toString.call(obj) === '[object String]';
-    helperMethod.getCheckedValues = (nodeList) => [...nodeList].filter((item) => item.checked).map((item) => item.value);
 
     helperMethod.createNode = (element) => {
       var elemType = element.type,
@@ -476,6 +469,17 @@ var validateManager = function validateManager(configOptions) {
       }
       return source;
     };
+
+    helperMethod.insertAfter = (newNode, element) => { element.parentNode.insertBefore(newNode, element.nextSibling) };
+    helperMethod.html = (element, content) => { element.innerHTML = content };
+    helperMethod.removeNode = (element) => { element.parentNode.removeChild(element) };
+    helperMethod.exists = (selector) => document.querySelectorAll(selector).length > 0;
+    helperMethod.isBoolean = (obj) => toString.call(obj) === '[object Boolean]';
+    helperMethod.isNodeList = (obj) => toString.call(obj) === '[object RadioNodeList]';
+    helperMethod.isObject = (obj) => toString.call(obj) === '[object Object]';
+    helperMethod.isFunction = (obj) => toString.call(obj) === '[object Function]';
+    helperMethod.isString = (obj) => toString.call(obj) === '[object String]';
+    helperMethod.getCheckedValues = (nodeList) => [...nodeList].filter((item) => item.checked).map((item) => item.value);
 
     return helperMethod;
   }
