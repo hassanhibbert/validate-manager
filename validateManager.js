@@ -25,7 +25,6 @@ var validateManager = function validateManager(configOptions) {
 
       // validation methods
       validateMethod = {
-        radio: radio,
         email: email,
         digits: digits,
         equalTo: equalTo,
@@ -38,7 +37,6 @@ var validateManager = function validateManager(configOptions) {
       // default error message
       errorMessages = {
         lettersOnly: 'Please use letters only.',
-        radio: 'Please select an option.',
         email: 'Please enter a valid email address.',
         equalTo: 'Please enter the same value.',
         digits: 'Please enter a valid digit.',
@@ -139,13 +137,22 @@ var validateManager = function validateManager(configOptions) {
 
   // get key/value pair for `onSuccess` callback
   function getInputKeyValues(validateObjects) {
-    var key;
+    var key, value;
     return validateObjects.reduce((data, validateObject) => {
 
       // if input is a node list then get first element name
       key = validateObject.input.name || validateObject.input[0].name;
 
-      data[key] = validateObject.input.value;
+      // if value is a node list
+      if (utils.isNodeList(validateObject.input)) {
+        var inputValues = utils.getCheckedValues(validateObject.input);
+        value = (inputValues.length > 1) ? inputValues : inputValues[0];
+      } else {
+        value = validateObject.input.value
+      }
+
+      data[key] = value;
+
       return data;
     }, {});
   }
@@ -201,7 +208,9 @@ var validateManager = function validateManager(configOptions) {
 
         // overwrite default messages to add custom ones
         if (validateObject.hasOwnProperty('message')) {
-          validateObject.error[ruleKey].message = validateObject.message[ruleKey];
+          var customMessage = validateObject.message[ruleKey],
+              defaultMessage = validateObject.error[ruleKey].message;
+          validateObject.error[ruleKey].message = customMessage || defaultMessage;
         }
       });
 
@@ -235,7 +244,10 @@ var validateManager = function validateManager(configOptions) {
 
   function validateAllRequiredFields(requiredFields) {
     requiredFields.forEach((validateObject) => {
-      validateInput(validateObject.input);
+      var input = (utils.isNodeList(validateObject.input))
+        ? validateObject.input[0]
+        : validateObject.input;
+      validateInput(input);
     });
   }
 
@@ -272,7 +284,7 @@ var validateManager = function validateManager(configOptions) {
 
   function validateInput(inputElement) {
     var ruleKeys,
-        currentValidateObject = getValidateObject(inputElement.name)[0],
+        currentValidateObject = getValidateObject(inputElement)[0],
         currentValidateRules = currentValidateObject.rules,
         errorQueue = updateQueue('errorQueue');
 
@@ -283,7 +295,7 @@ var validateManager = function validateManager(configOptions) {
       var dynamicValidateMethod,
         isKeyBoolean = utils.isBoolean(currentValidateRules[ruleKey]),
         secondArgValue = (!isKeyBoolean) ? currentValidateRules[ruleKey] : null,
-        inputValue = (ruleKey === 'radio') ? currentValidateObject.input : inputElement.value;
+        inputValue = (utils.isNodeList(currentValidateObject.input)) ? currentValidateObject.input : inputElement.value;
 
       if (utils.isFunction(validateMethod[ruleKey])) {
         dynamicValidateMethod = validateMethod[ruleKey];
@@ -304,7 +316,6 @@ var validateManager = function validateManager(configOptions) {
           errorQueue.remove(currentValidateObject);
           hideError(currentValidateObject.id);
         }
-
       } else {
         currentValidateObject.error[ruleKey].isValid = false;
 
@@ -318,11 +329,11 @@ var validateManager = function validateManager(configOptions) {
     });
   }
 
-  function getValidateObject(elementName) {
+  function getValidateObject(element) {
     return formData.validateObjects.filter((obj) => {
-      return (utils.isRadioList(obj.input))
-        ? (obj.input[0].name === elementName)
-        : (obj.input.name === elementName);
+      return (utils.isNodeList(obj.input))
+        ? obj.input[0].name === element.name
+        : obj.input.name === element.name;
     });
   }
 
@@ -334,7 +345,10 @@ var validateManager = function validateManager(configOptions) {
 
   function getRequiredFieldsCompleted(requiredFields) {
     return requiredFields.filter((validateObject) => {
-      return (validateMethod.required(validateObject.input.value));
+      var value = (utils.isNodeList(validateObject.input))
+        ? validateObject.input
+        : validateObject.input.value;
+      return (validateMethod.required(value));
     });
   }
 
@@ -354,11 +368,11 @@ var validateManager = function validateManager(configOptions) {
       // create error message div
       errorMessageDiv = utils.createNode(domElementSetup);
 
-      if (validateObject.rules && validateObject.rules.radio) {
+      if (utils.isNodeList(validateObject.input)) {
         lastRadioButton = [...validateObject.input].reverse()[0]; // convert node list to array then get last item
-        utils.insertAfter(errorMessageDiv, lastRadioButton);
+        lastRadioButton.parentNode.appendChild(errorMessageDiv);
       } else {
-        utils.insertAfter(errorMessageDiv, validateObject.input);
+        validateObject.input.parentNode.appendChild(errorMessageDiv);
       }
 
     });
@@ -369,7 +383,16 @@ var validateManager = function validateManager(configOptions) {
    */
 
   function required(value) {
-    return !(value.length === 0 || value.trim() == "" || value == null);
+    if (utils.isNodeList(value)) {
+      for (var i = 0; i < value.length; ++i) {
+        if (value[i].checked) {
+          return true;
+        }
+      }
+      return false;
+    } else {
+      return !(value.length === 0 || value.trim() == "" || value == null);
+    }
   }
 
   function digits(n) {
@@ -385,7 +408,9 @@ var validateManager = function validateManager(configOptions) {
   }
 
   function minLength(value, minLength) {
-    return (value.length >= minLength);
+    return (utils.isNodeList(value))
+      ? utils.getCheckedValues(value).length >= minLength
+      : value.length >= minLength;
   }
 
   function equalTo(value, elementName, mainForm) {
@@ -396,15 +421,6 @@ var validateManager = function validateManager(configOptions) {
   function email(email) {
     var emailRegEx = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return emailRegEx.test(email);
-  }
-
-  function radio(radioNodeList) {
-    for (var i = 0; i < radioNodeList.length; ++i) {
-      if (radioNodeList[i].checked) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /*
@@ -421,10 +437,11 @@ var validateManager = function validateManager(configOptions) {
     helperMethod.removeNode = (element) => { element.parentNode.removeChild(element) };
     helperMethod.exists = (selector) => document.querySelectorAll(selector).length > 0;
     helperMethod.isBoolean = (obj) => toString.call(obj) === '[object Boolean]';
-    helperMethod.isRadioList = (obj) => toString.call(obj) === '[object RadioNodeList]';
+    helperMethod.isNodeList = (obj) => toString.call(obj) === '[object RadioNodeList]';
     helperMethod.isObject = (obj) => toString.call(obj) === '[object Object]';
     helperMethod.isFunction = (obj) => toString.call(obj) === '[object Function]';
     helperMethod.isString = (obj) => toString.call(obj) === '[object String]';
+    helperMethod.getCheckedValues = (nodeList) => [...nodeList].filter((item) => item.checked).map((item) => item.value);
 
     helperMethod.createNode = (element) => {
       var elemType = element.type,

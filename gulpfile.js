@@ -19,3 +19,7 @@ gulp.task('compress', function (cb) {
     );
 });
 
+gulp.task('watch', function () {
+  gulp.watch(['validateManager.js'], ['compress']);
+});
+

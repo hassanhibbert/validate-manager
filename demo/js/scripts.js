@@ -20,7 +20,7 @@ myForm.validate({
   rules: { maxLength: 2, minLength: 2 }
 }, {
   input: 'operatingSystem',
-  rules: { radio: true }
+  required: true
 }, {
   input: 'age',
   rules: { isFive: true }
@@ -29,6 +29,15 @@ myForm.validate({
   required: true,
   message: {
     required: 'custom message: please fill out this field',
+  },
+}, {
+  input: 'newsletter',
+  required: true,
+  rules: {
+    minLength: 2
+  },
+  message: {
+    minLength: 'Please select at least 2 newsletters.'
   }
 });
 

@@ -19,7 +19,7 @@
             <td><input type="text" name="initial" id="initial"/></td>
         </tr>
         <tr>
-            <td class="align-top">OS:</td>
+            <td class="align-top">OS:*</td>
             <td>
                 <label for="mac">Mac OS</label>
                 <input type="radio" name="operatingSystem" id="mac" value="Mac OS"/>
@@ -37,6 +37,23 @@
         <tr>
             <td class="align-top"><label for="age">Age:</label></td>
             <td><input type="text" name="age" id="age"/></td>
+        </tr>
+        <tr>
+            <td class="align-top">Newsletters:*</td>
+            <td>
+                <input type="checkbox" name="newsletter" id="sports" value="sports" />
+                <label for="sports">Sports </label><br/>
+
+                <input type="checkbox" name="newsletter" id="computers" value="computers" />
+                <label for="computers">Computers & Technology</label><br/>
+
+                <input type="checkbox" name="newsletter" id="photography" value="photography" />
+                <label for="photography">Aerial Photography</label><br/>
+
+                <input type="checkbox" name="newsletter" id="luxurycars" value="luxurycars" />
+                <label for="luxurycars">Luxury Cars</label>
+
+            </td>
         </tr>
         <tr>
             <td class="align-top"><label for="car">Car:*</label></td>
@@ -63,7 +80,8 @@
     <hr/>
     <div id="success"></div>
 </div>
-<script src="js/validateManager.min.js"></script>
+<script src="../validateManager.js"></script>
+<!--<script src="js/validateManager.min.js"></script>-->
 <script src="js/scripts.js"></script>
 </body>
 </html>
