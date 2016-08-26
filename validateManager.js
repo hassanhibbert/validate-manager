@@ -14,9 +14,8 @@ var validateManager = function validateManager(configOptions) {
 
       // defaults
       defaultOptions = {
-        onSuccess: null,
+        onSubmitHandler: null,
         formElement: null,
-        preventSubmit: false,
         validateOnChange: true,
         resetFormOnSubmit: true,
       },
@@ -127,9 +126,8 @@ var validateManager = function validateManager(configOptions) {
     // verify if required fields are completed and there are not errors in the error queue
     if (isRequiredFieldsCompleted && isErrorQueueEmpty) {
       var inputKeyValues = getInputKeyValues(formData.validateObjects);
-      utils.isFunction(options.onSuccess) && options.onSuccess(inputKeyValues);
+      utils.isFunction(options.onSubmitHandler) && options.onSubmitHandler(options.formElement, inputKeyValues);
       options.resetFormOnSubmit && options.formElement.reset();
-      !options.preventSubmit && options.formElement.submit();
     } else {
       validateAllRequiredFields(requiredFields);
     }
