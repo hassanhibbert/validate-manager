@@ -16,6 +16,10 @@
 
 /* not needed */
 
+input {
+    margin-left: 1px;
+}
+
 td.align-top {
     vertical-align: top;
 }
