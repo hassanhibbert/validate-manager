@@ -1,6 +1,6 @@
-var myForm = validateManager({
+var myForm = new ValidateManager({
   formElement: 'myForm',
-  onSubmitHandler: function (form, data) {
+  onSubmitHandler: function (event, data, form) {
     // form.submit();
     console.log('data: ', data);
     document.querySelector('#success').innerHTML = JSON.stringify(data);
