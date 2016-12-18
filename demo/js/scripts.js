@@ -12,26 +12,26 @@ myForm.addMethod('isFive', function(value) {
 }, 'Not equal to 5!');
 
 myForm.validate({
-  input: 'name',
+  fieldName: 'name',
   required: true,
   rules: { lettersOnly: true },
 }, {
-  input: 'initial',
+  fieldName: 'initial',
   rules: { maxLength: 2, minLength: 2 }
 }, {
-  input: 'operatingSystem',
+  fieldName: 'operatingSystem',
   required: true
 }, {
-  input: 'age',
+  fieldName: 'age',
   rules: { isFive: true }
 }, {
-  input: 'car',
+  fieldName: 'car',
   required: true,
   message: {
     required: 'custom message: please fill out this field',
   },
 }, {
-  input: 'newsletter',
+  fieldName: 'newsletter',
   required: true,
   rules: {
     minLength: 2
