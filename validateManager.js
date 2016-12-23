@@ -5,7 +5,8 @@
  * Copyright 2016 Hassan Hibbert, under the MIT License
  */
 
-(function (global, doc) { 'use strict';
+'use strict';
+;(function (global, doc) {
 
   //:::::::::: Utilities :::::::::://
 
@@ -16,8 +17,9 @@
   var utils = {
     extend: (source, properties) => {
       for (var property in properties) {
-        if (hasOwn.call(properties, property))
+        if (hasOwn.call(properties, property)) {
           source[property] = properties[property];
+        }
       }
       return source;
     },
@@ -31,7 +33,8 @@
     isFunction:       (obj) => toString.call(obj) === '[object Function]',
     isString:         (obj) => toString.call(obj) === '[object String]',
     getCheckedValues: (nodeList) => [...nodeList].filter((item) => item.checked).map((item) => item.value),
-    first:            (obj) => obj[0]
+    first:            (obj) => obj.length > 0 ? obj[0] : obj,
+    flatten:          (array) => [].concat(...array)
   };
 
   //:::::::::: ValidateManager Constructor :::::::::://
@@ -53,12 +56,13 @@
       email: 'Please enter a valid email address.',
       equalTo: 'Please enter the same value.',
       digits: 'Please enter a valid digit.',
+      range: 'Please enter a number between {0} and {1}',
       required: 'This field is required.',
       minLength: 'Please enter a minimum of {0} characters.',
       maxLength: 'Please enter a maximum of {0} characters.'
     };
 
-    this.form = { validationList: [], errorCollection: [] };
+    this.form = { validationList: [], errorCollection: [], errorMethods: errorMethods.call(this) };
 
     this.validationMethods = internalValidationMethods.call(this);
 
@@ -66,8 +70,9 @@
     this.listeners.onChangeHandler = onChangeHandler.bind(this);
     this.listeners.onSubmitHandler = onSubmitHandler.bind(this);
 
-    if (utils.isObject(config))
+    if (utils.isObject(config)) {
       this.options = utils.extend(defaults, config);
+    }
   }
 
   //:::::::::: Public Methods :::::::::://
@@ -75,19 +80,37 @@
   ValidateManager.prototype = {
 
     validate: function (...validationList) {
-      this.options.formElement = doc.forms[this.options.formElement];
-      this.form.validationList = updateList.call(this, validationList);
-      buildErrorPlaceholders.call(this);
-      initializeEvents.call(this);
+      if (doc.forms[this.options.formElement]) {
+        this.options.formElement = doc.forms[this.options.formElement];
+        this.form.validationList = updateList.call(this, utils.flatten(validationList));
+        buildErrorPlaceholders.call(this);
+        initializeEvents.call(this);
+      } else {
+        throw new Error(`Could not find a form element with the name "${this.options.formElement}"`);
+      }
     },
 
-    addMethod: function (name, method, message) {
+    addMethod: function (name, method, message = '') {
       if (!hasOwn.call(this.validationMethods, name)) {
         this.validationMethods[name] = method;
-        this.errorMessages[name] = message || '';
+        this.errorMessages[name] = message;
       } else {
-        throw `Method '${name}' is already use.`;
+        throw new Error(`Method '${name}' is already use.`);
       }
+    },
+
+    valid: function() {
+      var isValid = false;
+      validateRequiredFields.call(this, () => { isValid = true });
+      return isValid;
+    },
+
+    getInvalidList: function () {
+      this.valid();
+      return errorMethods.call(this).getInvalid.call(this);
+    },
+    getInvalidCount: function() {
+      return this.getInvalidList.call(this).length;
     }
 
   };
@@ -98,26 +121,33 @@
   //:::::::::: Private Methods :::::::::://
 
   function initializeEvents() {
-    if (this.options.validateOnChange)
+    if (this.options.validateOnChange) {
       this.options.formElement.addEventListener('change', this.listeners.onChangeHandler, false);
+    }
 
-    this.options.formElement.addEventListener('submit', this.listeners.onSubmitHandler, false);
+    if (this.options.formElement) {
+      this.options.formElement.addEventListener('submit', this.listeners.onSubmitHandler, false);
+    }
   }
 
   function onChangeHandler(event) {
     event.preventDefault();
     validateField.call(this, event.target);
-    if (utils.isFunction(this.options.onChangeHandler))
+    if (utils.isFunction(this.options.onChangeHandler)) {
       this.options.onChangeHandler(event, event.target, this.options.formElement);
+    }
   }
 
   function onSubmitHandler(event) {
     event.preventDefault();
     validateRequiredFields.call(this, (data) => {
-      if (utils.isFunction(this.options.onSubmitHandler))
+      if (utils.isFunction(this.options.onSubmitHandler)) {
         this.options.onSubmitHandler(event, data, this.options.formElement);
+      }
 
-      if (this.options.resetFormOnSubmit) this.options.formElement.reset();
+      if (this.options.resetFormOnSubmit) {
+        this.options.formElement.reset();
+      }
     });
   }
 
@@ -143,8 +173,9 @@
 
     // verify that there are no errors before executing the callback
     var error = errorMethods.call(this);
-    if (error.isErrorCollectionEmpty.call(this) && utils.isFunction(callback))
-      callback(getAllValues.call(this));
+    if (error.isErrorCollectionEmpty.call(this) && utils.isFunction(callback)) {
+      callback(getAllValues.call(this), error);
+    }
   }
 
   function validateField(element) {
@@ -163,21 +194,23 @@
       var dynamicMethod = this.validationMethods[ruleName];
       var value1 = utils.isNodeList(validateItem.element) ? validateItem.element : validateItem.element.value;
       var value2 = !utils.isBoolean(validateItem.rules[ruleName]) ? validateItem.rules[ruleName] : undefined;
-      if (!utils.isFunction(dynamicMethod)) throw ` "${ruleName}" is not a valid rule.`;
+
+      if (!utils.isFunction(dynamicMethod)) {
+        throw new Error(` "${ruleName}" is not a valid rule.`);
+      }
+
       var validationPassed = validateItem.rules[ruleName] && dynamicMethod(value1, value2, this.options.formElement);
 
-      if (validationPassed) {
-        errorMethod.remove.apply(this, [ruleName, validateItem]);
-      } else {
-        errorMethod.add.apply(this, [ruleName, validateItem]);
-      }
+      validationPassed
+        ? errorMethod.remove.apply(this, [ruleName, validateItem])
+        : errorMethod.add.apply(this, [ruleName, validateItem]);
 
       if (errorMethod.isErrorInCollection.apply(this, [ruleName, validateItem])) {
         showError(validateItem.id, validateItem.error[ruleName]);
       } else if (!errorMethod.isErrorInCollection.apply(this, [ruleName, validateItem, false])) {
         hideError(validateItem.id);
       }
-      return !validationPassed;
+      return !validationPassed; // if true the loop stops to display one error at a time
     });
   }
 
@@ -193,7 +226,7 @@
 
   function errorMethods() {
 
-    return { add, remove, isErrorInCollection, isErrorCollectionEmpty };
+    return { add, remove, isErrorInCollection, isErrorCollectionEmpty, getInvalid };
 
     ////////////////////
 
@@ -210,6 +243,10 @@
 
     function isErrorCollectionEmpty() {
       return this.form.errorCollection.length === 0;
+    }
+
+    function getInvalid() {
+      return this.form.errorCollection;
     }
 
     function add(ruleName, validateItem) {
@@ -243,8 +280,15 @@
       .map((validateItem) => {
         var hasRules = hasOwn.call(validateItem, 'rules');
         var isRequired = hasOwn.call(validateItem, 'required');
-        if (!hasRules)validateItem.rules = {};
-        if (isRequired) utils.extend(validateItem.rules, { required: true });
+
+        if (!hasRules) {
+          validateItem.rules = {};
+        }
+
+        if (isRequired) {
+          utils.extend(validateItem.rules, { required: true });
+        }
+
         return validateItem;
       })
 
@@ -262,8 +306,9 @@
           }
 
           // Overwrite the default error message with the custom one
-          if (hasOwn.call(validateItem, 'message') && validateItem.message[ruleName])
+          if (hasOwn.call(validateItem, 'message') && validateItem.message[ruleName]) {
             validateItem.error[ruleName] = validateItem.message[ruleName];
+          }
         });
 
         delete validateItem.message;
@@ -274,6 +319,7 @@
     // Formats dynamic error messages
     function formatString(string, ...values) {
       return string.replace(/{(.*?)}/g, (match, templateIndex) => {
+        values = Array.isArray(values[templateIndex]) ? utils.flatten(values) : values;
         return values[templateIndex];
       });
     }
@@ -302,25 +348,24 @@
       required: (value) => {
         if (utils.isNodeList(value)) {
           for (var i = 0; i < value.length; ++i) {
-            if (value[i].checked) return true;
+            if (value[i].checked) {
+              return true;
+            }
           }
           return false;
         } else {
           return !(value.length === 0 || value.trim() === '' || value === null);
         }
       },
-      digits: (n) => !isNaN(parseFloat(n)) && isFinite(n),
+      range: (value, range) => parseInt(value) >= range[0] && parseInt(value) <= range[1],
+      digits: (value) => !isNaN(parseFloat(value)) && isFinite(value),
       lettersOnly: (value) => /^[a-z]+$/i.test(value),
-      maxLength: (value, maxLength) => {
-        return (utils.isNodeList(value))
-          ? utils.getCheckedValues(value).length <= maxLength
-          : value.length <= maxLength;
-      },
-      minLength: (value, minLength) => {
-        return (utils.isNodeList(value))
-          ? utils.getCheckedValues(value).length >= minLength
-          : value.length >= minLength;
-      },
+      maxLength: (value, maxLength) => utils.isNodeList(value)
+        ? utils.getCheckedValues(value).length <= maxLength
+        : value.length <= maxLength,
+      minLength: (value, minLength) => utils.isNodeList(value)
+        ? utils.getCheckedValues(value).length >= minLength
+        : value.length >= minLength,
       equalTo: (value, elementName, mainForm) => {
         var element = mainForm[elementName];
         return (value === element.value);

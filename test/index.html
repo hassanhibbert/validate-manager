@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Validate Manager - Unit Tests</title>
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.0.1.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture">
+
+    <form name="form1" action="">
+        <input name="firstName" type="text">
+        <input name="lastName" type="text">
+    </form>
+
+    <form name="form2">
+        <input name="username" type="text">
+        <input name="password" type="password">
+    </form>
+
+    <form name="form3">
+        <input name="email" type="text">
+        <input name="hobby" type="radio" value="basketball">
+        <input name="hobby" type="radio" value="tennis">
+        <input name="hobby" type="radio" value="swimming">
+
+        <select name="car" id="car">
+            <option value="">Select a car:</option>
+            <option value="saab">Saab</option>
+            <option value="mercedes">Mercedes</option>
+            <option value="audi">Audi</option>
+            <option value="toyota">Toyota</option>
+        </select>
+    </form>
+
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
+<script src="../validateManager.js"></script>
+<script src="tests.js"></script>
+</body>
+</html>

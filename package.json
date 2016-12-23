@@ -4,7 +4,7 @@
   "description": "Form validation manager",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/runner.js"
   },
   "repository": {
     "type": "git",
@@ -20,14 +20,14 @@
     "url": "https://github.com/hassanhibbert/validateManager/issues"
   },
   "homepage": "https://github.com/hassanhibbert/validateManager#readme",
-  "devDependencies": {
-
-  },
+  "devDependencies": {},
   "dependencies": {
     "babel-preset-es2015": "^6.13.2",
+    "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^2.0.0",
     "pump": "^1.0.1",
-    "gulp": "^3.9.1"}
+    "qunit": "^0.9.1"
+  }
 }
