@@ -62,7 +62,7 @@
       maxLength: 'Please enter a maximum of {0} characters.'
     };
 
-    this.form = { validationList: [], errorCollection: [], errorMethods: errorMethods.call(this) };
+    this.form = { validationList: [], errorCollection: [] };
 
     this.validationMethods = internalValidationMethods.call(this);
 
