@@ -139,8 +139,9 @@
   });
 
   // Example of creating your own custom validate method
-  sampleForm.addMethod('isFive', function (value) {
-    return parseInt(value) === 5;
+  sampleForm.addMethod('isFive', function (value1, value2, formElement) {
+    console.log(value1, value2, formElement);
+    return parseInt(value1) === 5;
   }, 'Not equal to 5!');
 
   // Example of setting custom error messages for input fields

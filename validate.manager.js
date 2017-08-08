@@ -274,7 +274,7 @@
       ruleNameList.some((ruleName) => {
         var selectedValidateMethod = this[ruleName].bind(this);
         var value1 = this.isNodeList(validateItem.element) ? validateItem.element : validateItem.element.value;
-        var value2 = !this.isBoolean(validateItem.rules[ruleName]) ? validateItem.rules[ruleName] : undefined;
+        var value2 = validateItem.rules[ruleName];
         if (!this.isFunction(selectedValidateMethod)) throw new Error(`"${ruleName}" is not a valid rule.`);
         var validationPassed = validateItem.rules[ruleName] && selectedValidateMethod(value1, value2, this.options.formElement);
 

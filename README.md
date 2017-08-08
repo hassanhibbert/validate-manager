@@ -7,6 +7,8 @@ http://hassanhibbert.com/validate-manager/
 ### Setup
 Load the script into your page. Set the `formElement` property to the forms name property. Then call the `validate` method. 
 
+Sample styles for error messages can be found in the demo/css directory of the project.
+
 *Note: Form element names are required.*
 
 ```html
@@ -204,7 +206,8 @@ Function signature: `.addMethod(methodName, callback, errorMessage);`
     - **value1**
       - The value from the form field
     - **value2**
-      - The value to test against. Usually used for `minlength`,`maxlength`, `range`, and `equalTo`.
+      - The value to test against. 
+      - Example `data-vm-minlength="5"` or `rules: { minlength: 5 }`. `value2` will be **5**.
     - **formElement**
       - The main form element.
 3. **errorMessage**
