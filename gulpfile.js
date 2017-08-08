@@ -11,7 +11,7 @@ gulp.task('compress', function (cb) {
                 presets: ['es2015']
             }),
             rename('validate.manager.min.js'),
-            uglify(),
+            uglify({output: {comments: /^!|@preserve|@license|@cc_on/i}}),
             gulp.dest('dist'),
             gulp.dest('demo/js')
         ],

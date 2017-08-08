@@ -1,4 +1,5 @@
-/*
+/**
+ * @preserve
  * ValidateManager: A JavaScript form validator
  * Version: 1.0.0
  * Author: Hassan Hibbert <http://hassanhibbert.com/>
@@ -10,7 +11,7 @@
 (function (global, doc) {
   'use strict';
 
-  /*
+  /**
    * deepmerge - Merge the enumerable attributes of two objects deeply.
    * https://github.com/KyleAMathews/deepmerge
    * Author: Kyle Mathews
