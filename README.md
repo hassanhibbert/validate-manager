@@ -38,7 +38,7 @@ The below table displays all of the default validation methods built into `Valid
 
 ##### - Input (lettersOnly and required)
 Using the attribute `data-vm-required="true"` and `data-vm-letters-only="true">` will make the input field required and the value to be validated for alphabetic letters only.
-```
+```html
 <input name="fullname" 
        type="text" 
        data-vm-required="true" 
@@ -46,7 +46,7 @@ Using the attribute `data-vm-required="true"` and `data-vm-letters-only="true">`
 ```
 ##### - Input (email)
 Using the attribute `data-vm-email="true"` will validate input for a valid email address.
-```
+```html
 <input name="email" type="text" data-vm-email="true" >
 ```
 
@@ -87,7 +87,7 @@ var sampleForm = ValidateManager(config);
 sampleForm.validate();
 ```
 
-#### Config - onSubmitHandler 
+#### Example - onSubmitHandler 
 
 ```javascript
 var config = {
@@ -151,7 +151,8 @@ Function signature: `.validate(options)`
 <script>
   var myform = ValidateManager({ formElement: 'myform' });
   
-  myform.validate({
+  // set rules
+  var options = {
     'firstname': {
       rules: { required: true, lettersOnly: true, minlength: 2 }
     },
@@ -161,7 +162,10 @@ Function signature: `.validate(options)`
     'email': {
       rules: { email: true, required: true }
     }
-  });
+  };
+  
+  // pass to validate method
+  myform.validate(options);
 </script>
 
 ```
@@ -171,7 +175,7 @@ The `destroy` method would be useful for single page applications where the even
 
 Function signature: `.destroy()`
 
-#### Example - destroy()
+#### Example
 ```html
 <form name="myform">
   <input type="text" name="fullname" data-vm-required="true">
@@ -206,7 +210,7 @@ Function signature: `.addMethod(methodName, callback, errorMessage);`
 3. **errorMessage**
     - The error message what will be displayed when the method is triggered 
 
-#### Example - addMethod()
+#### Example
 ```html
 <form name="myform">
   <input type="text" name="number-five" data-vm-is-five="true">
@@ -217,55 +221,9 @@ Function signature: `.addMethod(methodName, callback, errorMessage);`
   
   myform.addMethod('isFive', function (value1, value2, formElement) {
     return parseInt(value1) === 5;
-  }, 'Note equal to 5.');
+  }, 'Not equal to 5.');
   
   myform.validate();
-</script>
-
-```
-
-### Custom Error Messages
-Here is an example of how you would add your own custom error messaging
-
-```html
-<form name="myform">
-  <input type="text" name="fullname" data-vm-required="true" data-vm-minlength="2">
-</form>
-
-<script>
-  var myform = ValidateManager({ formElement: 'myform' });
-  
-  myform.validate({
-    'fullname': {
-      message: { 
-        required: 'Please enter your full name. It is required.' ,
-        minlength: 'Please enter a name that is 2 or more characters'
-      }
-    }
-  });
-</script>
-```
-
-### Submit Handler
-Here is an example of how to use the submit handler callback option
-
-```html
-<form name="sample">
-  <input type="text" name="zipcode"  data-vm-digits="true">
-</form>
-<script>
-var sampleForm = ValidateManager({
-    formElement: 'sample',
-    onSubmitHandler: function (event, data, form) {
-      // This is where you can handle your form submit
-      // form.submit();
-      // {data} form values
-      // {event} on submit event object
-      // {form} form element
-    }
-  });
-
-sampleForm.validate();
 </script>
 
 ```
