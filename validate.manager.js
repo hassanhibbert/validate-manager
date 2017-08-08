@@ -8,7 +8,7 @@
  */
 
 
-(function (global, doc) {
+(function (global) {
   'use strict';
 
   /**
@@ -19,10 +19,21 @@
    */
   !function(r){function e(r){var e=r&&"object"==typeof r;return e&&"[object RegExp]"!==Object.prototype.toString.call(r)&&"[object Date]"!==Object.prototype.toString.call(r)}function t(r){return Array.isArray(r)?[]:{}}function n(r,n){var o=n&&n.clone===!0;return o&&e(r)?c(t(r),r,n):r}function o(r,t,o){var a=r.slice();return t.forEach(function(t,i){void 0===a[i]?a[i]=n(t,o):e(t)?a[i]=c(r[i],t,o):-1===r.indexOf(t)&&a.push(n(t,o))}),a}function a(r,t,o){var a={};return e(r)&&Object.keys(r).forEach(function(e){a[e]=n(r[e],o)}),Object.keys(t).forEach(function(i){a[i]=e(t[i])&&r[i]?c(r[i],t[i],o):n(t[i],o)}),a}function c(r,e,t){var c=Array.isArray(e),i=t||{arrayMerge:o},u=i.arrayMerge||o;return c?Array.isArray(r)?u(r,e,t):n(e,t):a(r,e,t)}c.all=function(r,e){if(!Array.isArray(r)||r.length<2)throw Error("first argument should be an array with at least two elements");return r.reduce(function(r,t){return c(r,t,e)})},r.deepmerge=r.deepmerge||c}(window);
 
+  // Export module
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = setupValidateManager;
+    }
+    exports.ValidateManager = setupValidateManager;
+  } else {
+    global.ValidateManager = setupValidateManager;
+  }
+
   // Shortcut variables
   var objProto = Object.prototype;
   var toString = objProto.toString;
   var hasOwn = objProto.hasOwnProperty;
+  var doc = document;
 
   // Creates a new instance of an object
   var Extend = function (source, object) {
@@ -470,7 +481,4 @@
     }
   });
 
-  // Expose ValidateManager
-  global.ValidateManager = global.ValidateManager || setupValidateManager;
-
-})(window, document);
+})(window || this);

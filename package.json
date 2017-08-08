@@ -1,7 +1,7 @@
 {
   "name": "validate-manager",
   "version": "1.0.0",
-  "description": "Form validation manager",
+  "description": "A Javascript Form Validator",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hassanhibbert/validateManager.git"
+    "url": "git+https://github.com/hassanhibbert/validate-manager.git"
   },
   "keywords": [
     "javascript",
@@ -18,9 +18,9 @@
   "author": "Hassan Hibbert",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hassanhibbert/validateManager/issues"
+    "url": "https://github.com/hassanhibbert/validate-manager/issues"
   },
-  "homepage": "https://github.com/hassanhibbert/validateManager#readme",
+  "homepage": "https://github.com/hassanhibbert/validate-manager#readme",
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1"
   },
