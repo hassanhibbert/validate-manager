@@ -6,7 +6,10 @@ http://hassanhibbert.com/validate-manager/
 
 ### Setup
 
-[Download Project Files Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip])
+[Download Project Files Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip)
+
+Or download from npm 
+`npm install validate-manager --save`
 
 Load the script into your page. Set the `formElement` property to the forms name property. Then call the `validate` method. 
 
