@@ -1,6 +1,6 @@
 {
   "name": "validate-manager",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Javascript Form Validator",
   "main": "index.js",
   "scripts": {
@@ -30,7 +30,5 @@
     "pump": "^1.0.1",
     "gulp": "^3.9.1"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {}
 }
