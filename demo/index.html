@@ -68,12 +68,12 @@
 			</td>
 		</tr>
 		<tr>
-			<td class="align-top"><label for="age">Number (5):</label></td>
-			<td><input type="text" name="age" id="age"
+			<td class="align-top"><label for="shoe-size">Size (5):</label></td>
+			<td><input type="text" name="shoe-size" id="shoe-size"
 			           data-vm-is-five="true"/></td>
 		</tr>
 		<tr>
-			<td class="align-top"><label for="age">Range:</label></td>
+			<td class="align-top"><label for="range">Range:</label></td>
 			<td><input placeholder="Between 5 and 10" type="text" name="range" id="range"
 			           data-vm-range="[5,10]"/></td>
 		</tr>
@@ -122,7 +122,7 @@
 	<hr/>
 	<div id="success"></div>
 </div>
-<script src="./js/validate.manager.min.js"></script>
+<script src="../validate.manager.js"></script>
 <script>
 	// One line validation
 	// ValidateManager({ formElement: 'myForm' }).validate();
@@ -140,7 +140,6 @@
 
   // Example of creating your own custom validate method
   sampleForm.addMethod('isFive', function (value1, value2, formElement) {
-    console.log(value1, value2, formElement);
     return parseInt(value1) === 5;
   }, 'Not equal to 5!');
 

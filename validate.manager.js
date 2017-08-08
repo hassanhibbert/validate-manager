@@ -110,11 +110,16 @@
         if (attribute.name.indexOf(prefix) >= 0) {
           var strippedPrefix = attribute.name.replace(prefix, '');
           var method = this.camelCase(strippedPrefix, '-');
+          var attributeValue = attribute.value.indexOf("'") >= 0
+            ? attribute.value.replace(/[\/']/g, "\"")
+            : attribute.value;
+
           try {
-            var parsedValue = JSON.parse(attribute.value);
+            var parsedValue = JSON.parse(attributeValue);
           } catch (error) {
-            var parsedValue = attribute.value;
+            var parsedValue = attributeValue;
           }
+
           if (method === 'required') {
             result[method] = parsedValue;
           } else if (result.rules) {
