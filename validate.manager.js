@@ -104,7 +104,7 @@
       }, []).join('');
     },
     parseAttributes(element) {
-      var prefix = 'data-validate-';
+      var prefix = 'data-vm-';
       return [...element.attributes].reduce((result, attribute) => {
         if (attribute.name.indexOf(prefix) >= 0) {
           var strippedPrefix = attribute.name.replace(prefix, '');

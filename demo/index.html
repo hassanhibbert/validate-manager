@@ -17,8 +17,8 @@
 			</td>
 			<td>
 				<input type="text" name="name" id="name"
-				       data-validate-required="true"
-				       data-validate-letters-only="true"/>
+				       data-vm-required="true"
+				       data-vm-letters-only="true"/>
 				<div class="error-message-custom"></div>
 			</td>
 		</tr>
@@ -28,7 +28,7 @@
 			</td>
 			<td>
 				<input type="text" name="email" id="email"
-				       data-validate-email="true">
+				       data-vm-email="true">
 			</td>
 		</tr>
 		<tr>
@@ -37,8 +37,8 @@
 			</td>
 			<td>
 				<input type="text" name="confirmEmail" id="confirmEmail"
-				       data-validate-email="true"
-				       data-validate-equal-to="email">
+				       data-vm-email="true"
+				       data-vm-equal-to="email">
 			</td>
 		</tr>
 		<tr>
@@ -47,9 +47,9 @@
 			</td>
 			<td>
 				<input type="text" name="initial" id="initial"
-				       data-validate-letters-only="true"
-				       data-validate-maxlength="2"
-				       data-validate-minlength="2"/>
+				       data-vm-letters-only="true"
+				       data-vm-maxlength="2"
+				       data-vm-minlength="2"/>
 			</td>
 		</tr>
 		<tr>
@@ -57,7 +57,7 @@
 			<td>
 				<label for="mac">Mac OS</label>
 				<input type="radio" name="operatingSystem" id="mac" value="Mac OS"
-				       data-validate-required="true"/>
+				       data-vm-required="true"/>
 				<br/>
 				<label for="windows">Windows</label>
 				<input type="radio" name="operatingSystem" id="windows" value="Windows"/>
@@ -70,19 +70,19 @@
 		<tr>
 			<td class="align-top"><label for="age">Number (5):</label></td>
 			<td><input type="text" name="age" id="age"
-			           data-validate-is-five="true"/></td>
+			           data-vm-is-five="true"/></td>
 		</tr>
 		<tr>
 			<td class="align-top"><label for="age">Range:</label></td>
 			<td><input placeholder="Between 5 and 10" type="text" name="range" id="range"
-			           data-validate-range="[5,10]"/></td>
+			           data-vm-range="[5,10]"/></td>
 		</tr>
 		<tr>
 			<td class="align-top">Newsletters:*</td>
 			<td>
 				<input type="checkbox" name="newsletter" id="sports" value="sports"
-				       data-validate-required="true"
-				       data-validate-minlength="2"/>
+				       data-vm-required="true"
+				       data-vm-minlength="2"/>
 				<label for="sports">Sports </label><br/>
 
 				<input type="checkbox" name="newsletter" id="computers" value="computers"/>
@@ -98,7 +98,7 @@
 		<tr>
 			<td class="align-top"><label for="car">Car:*</label></td>
 			<td>
-				<select name="car" id="car" data-validate-required="true">
+				<select name="car" id="car" data-vm-required="true">
 					<option value="">Select a car:</option>
 					<option value="saab">Saab</option>
 					<option value="mercedes">Mercedes</option>
@@ -122,7 +122,7 @@
 	<hr/>
 	<div id="success"></div>
 </div>
-<script src="../validate.manager.js"></script>
+<script src="./js/validate.manager.min.js"></script>
 <script>
 	// One line validation
 	// ValidateManager({ formElement: 'myForm' }).validate();
