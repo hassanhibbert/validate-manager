@@ -8,7 +8,7 @@
  */
 
 
-(function (global) {
+(function () {
   'use strict';
 
   /**
@@ -25,8 +25,8 @@
       exports = module.exports = setupValidateManager;
     }
     exports.ValidateManager = setupValidateManager;
-  } else {
-    global.ValidateManager = setupValidateManager;
+  } else if (typeof window !== 'undefined') {
+    window.ValidateManager = setupValidateManager;
   }
 
   // Shortcut variables
@@ -481,4 +481,4 @@
     }
   });
 
-})(window || this);
+})();

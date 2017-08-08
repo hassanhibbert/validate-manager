@@ -5,6 +5,9 @@ A JavaScript tool for form validation.
 http://hassanhibbert.com/validate-manager/
 
 ### Setup
+
+[Download Project Files Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip])
+
 Load the script into your page. Set the `formElement` property to the forms name property. Then call the `validate` method. 
 
 Sample styles for error messages can be found in the demo/css directory of the project.
