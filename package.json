@@ -1,6 +1,6 @@
 {
   "name": "validate-manager",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Javascript Form Validator",
   "main": "index.js",
   "scripts": {
