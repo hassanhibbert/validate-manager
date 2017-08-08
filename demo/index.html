@@ -1,86 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Validation Module</title>
-    <link rel="stylesheet" href="css/styles.css">
+	<meta charset="UTF-8">
+	<title>Validation Module</title>
+	<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <h3>Validate Manager - Demo</h3>
 <p>(*) Required Fields.</p>
-<form name="myForm" id="myForm">
-    <table>
-        <tr>
-            <td class="align-top"><label for="name">First Name:*</label></td>
-            <td><input type="text" name="name" id="name"/></td>
-        </tr>
-        <tr>
-            <td class="align-top"><label for="initial">Initials:</label></td>
-            <td><input type="text" name="initial" id="initial"/></td>
-        </tr>
-        <tr>
-            <td class="align-top">OS:*</td>
-            <td>
-                <label for="mac">Mac OS</label>
-                <input type="radio" name="operatingSystem" id="mac" value="Mac OS"/>
+<form name="myForm" id="myForm" novalidate>
+	<table>
 
-                <br/>
-                <label for="windows">Windows</label>
-                <input type="radio" name="operatingSystem" id="windows" value="Windows"/>
+		<tr>
+			<td class="align-top">
+				<label for="name">First Name:*</label>
+			</td>
+			<td>
+				<input type="text" name="name" id="name"
+				       data-validate-required="true"
+				       data-validate-letters-only="true"/>
+				<div class="error-message-custom"></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top">
+				<label for="email">Email:</label>
+			</td>
+			<td>
+				<input type="text" name="email" id="email"
+				       data-validate-email="true">
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top">
+				<label for="confirmEmail">Confirm Email:</label>
+			</td>
+			<td>
+				<input type="text" name="confirmEmail" id="confirmEmail"
+				       data-validate-email="true"
+				       data-validate-equal-to="email">
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top">
+				<label for="initial">Initials:</label>
+			</td>
+			<td>
+				<input type="text" name="initial" id="initial"
+				       data-validate-letters-only="true"
+				       data-validate-maxlength="2"
+				       data-validate-minlength="2"/>
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top">OS:*</td>
+			<td>
+				<label for="mac">Mac OS</label>
+				<input type="radio" name="operatingSystem" id="mac" value="Mac OS"
+				       data-validate-required="true"/>
+				<br/>
+				<label for="windows">Windows</label>
+				<input type="radio" name="operatingSystem" id="windows" value="Windows"/>
+				<br/>
+				<label for="linux">Linux</label>
+				<input type="radio" name="operatingSystem" id="linux" value="Linux"/>
 
-                <br/>
-                <label for="linux">Linux</label>
-                <input type="radio" name="operatingSystem" id="linux" value="Linux"/>
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top"><label for="age">Number (5):</label></td>
+			<td><input type="text" name="age" id="age"
+			           data-validate-is-five="true"/></td>
+		</tr>
+		<tr>
+			<td class="align-top"><label for="age">Range:</label></td>
+			<td><input placeholder="Between 5 and 10" type="text" name="range" id="range"
+			           data-validate-range="[5,10]"/></td>
+		</tr>
+		<tr>
+			<td class="align-top">Newsletters:*</td>
+			<td>
+				<input type="checkbox" name="newsletter" id="sports" value="sports"
+				       data-validate-required="true"
+				       data-validate-minlength="2"/>
+				<label for="sports">Sports </label><br/>
 
-            </td>
-        </tr>
-        <tr>
-            <td class="align-top"><label for="age">Age:</label></td>
-            <td><input type="text" name="age" id="age"/></td>
-        </tr>
-        <tr>
-            <td class="align-top">Newsletters:*</td>
-            <td>
-                <input type="checkbox" name="newsletter" id="sports" value="sports" />
-                <label for="sports">Sports </label><br/>
+				<input type="checkbox" name="newsletter" id="computers" value="computers"/>
+				<label for="computers">Computers & Technology</label><br/>
 
-                <input type="checkbox" name="newsletter" id="computers" value="computers" />
-                <label for="computers">Computers & Technology</label><br/>
+				<input type="checkbox" name="newsletter" id="photography" value="photography"/>
+				<label for="photography">Aerial Photography</label><br/>
 
-                <input type="checkbox" name="newsletter" id="photography" value="photography" />
-                <label for="photography">Aerial Photography</label><br/>
-
-                <input type="checkbox" name="newsletter" id="luxurycars" value="luxurycars" />
-                <label for="luxurycars">Luxury Cars</label>
-
-            </td>
-        </tr>
-        <tr>
-            <td class="align-top"><label for="car">Car:*</label></td>
-            <td>
-                <select name="car" id="car">
-                    <option value="">Select a car:</option>
-                    <option value="saab">Saab</option>
-                    <option value="mercedes">Mercedes</option>
-                    <option value="audi">Audi</option>
-                    <option value="toyota">Toyota</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><button id="submit_button" type="submit">Submit</button></td>
-        </tr>
-    </table>
+				<input type="checkbox" name="newsletter" id="luxurycars" value="luxurycars"/>
+				<label for="luxurycars">Luxury Cars</label>
+			</td>
+		</tr>
+		<tr>
+			<td class="align-top"><label for="car">Car:*</label></td>
+			<td>
+				<select name="car" id="car" data-validate-required="true">
+					<option value="">Select a car:</option>
+					<option value="saab">Saab</option>
+					<option value="mercedes">Mercedes</option>
+					<option value="audi">Audi</option>
+					<option value="toyota">Toyota</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>
+				<button id="submit_button" type="submit">Submit</button>
+			</td>
+		</tr>
+	</table>
 </form>
 
 
 <div id="status">
-    OUTPUT:
-    <hr/>
-    <div id="success"></div>
+	OUTPUT:
+	<hr/>
+	<div id="success"></div>
 </div>
-<script src="js/validateManager.min.js"></script>
-<script src="js/scripts.js"></script>
+<script src="../validate.manager.js"></script>
+<script>
+	// One line validation
+	// ValidateManager({ formElement: 'myForm' }).validate();
+
+  var sampleForm = ValidateManager({
+    formElement: 'myForm',
+    onSubmitHandler: function (event, data, form) {
+      // This is where you can handle your form submit
+      // form.submit();
+      var outputArea = document.querySelector('#success');
+      outputArea.innerHTML = JSON.stringify(data);
+      console.log('form data: ', data);
+    }
+  });
+
+  // Example of creating your own custom validate method
+  sampleForm.addMethod('isFive', function (value) {
+    return parseInt(value) === 5;
+  }, 'Not equal to 5!');
+
+  // Example of setting custom error messages for input fields
+  sampleForm.validate({
+    'newsletter': {
+      message: { minlength: 'Please select at least {0} newsletters.' }
+    },
+    'car': {
+      message: { required: 'Please fill out this field.' }
+    },
+	  'confirmEmail': {
+      message: { equalTo: 'Email is not the same as above.' }
+	  }
+  });
+
+</script>
 </body>
 </html>

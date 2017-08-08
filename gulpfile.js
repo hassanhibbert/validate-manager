@@ -6,11 +6,11 @@ var rename = require('gulp-rename');
 
 gulp.task('compress', function (cb) {
     pump([
-            gulp.src('validateManager.js'),
+            gulp.src('validate.manager.js'),
             babel({
                 presets: ['es2015']
             }),
-            rename('validateManager.min.js'),
+            rename('validate.manager.min.js'),
             uglify(),
             gulp.dest('dist'),
             gulp.dest('demo/js')
@@ -20,6 +20,6 @@ gulp.task('compress', function (cb) {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(['validateManager.js'], ['compress']);
+  gulp.watch(['validate.manager.js'], ['compress']);
 });
 

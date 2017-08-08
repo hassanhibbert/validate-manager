@@ -1,20 +1,18 @@
-/* stye errors*/
-#error {
-    color: red;
-}
-
+/* style errors */
 .error-highlight {
     border: 1px solid red;
 }
 .error-message {
     color: red;
-}
-.error-hide {
     display: none;
 }
+.error-message_show {
+    display: block;
+}
 
-
-/* not needed */
+/* ====================== */
+/* not needed - demo only */
+/* ====================== */
 
 input {
     margin-left: 1px;
@@ -32,3 +30,7 @@ td.align-top {
 #success {
     color: green
 }
+
+/* ====================== */
+/* not needed - demo only */
+/* ====================== */
