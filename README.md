@@ -268,21 +268,6 @@ The `destroy` method would be useful for single page applications when the event
 With `addMethod()` you are able to add your own custom method for validation.
 
 **Note**: When creating a method name that is camel case `.addMethod('exampleMethod'...)` use Kebab Case when implementing html attributes `data-vm-example-method="true"`
-
-1. **methodName**
-  - The name of your custom method
-2. **callback**
-  - Function used to test a value, taking three arguments:
-    - **value1**
-      - The value from the form field
-    - **value2**
-      - The value to test against. 
-      - Example `data-vm-minlength="5"` or `rules: { minlength: 5 }`. `value2` will be **5**.
-    - **formElement**
-      - The main form element.
-3. **errorMessage**
-    - The error message what will be displayed when validation fails
-
 ##### Example
 ```html
 <form name="myform">
@@ -298,6 +283,22 @@ With `addMethod()` you are able to add your own custom method for validation.
   
   form.validate();
 </script>
-
 ```
+
+`.addMethod(methodName, callback, errorMessage)`
+1. **methodName**
+  - The name of your custom method
+2. **callback**
+  - Function used to test a value, taking three arguments:
+    - **value1**
+      - The value from the form field
+    - **value2**
+      - The value to test against. 
+      - Example `data-vm-minlength="5"` or `rules: { minlength: 5 }`. `value2` will be **5**.
+    - **formElement**
+      - The main form element.
+3. **errorMessage**
+    - The error message what will be displayed when validation fails
+
+
 
