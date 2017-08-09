@@ -1,7 +1,7 @@
 /**
  * @preserve
  * ValidateManager: A JavaScript form validator
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: Hassan Hibbert <http://hassanhibbert.com/>
  * Github: https://github.com/hassanhibbert/validate-manager
  * Copyright 2016-2017 Hassan Hibbert, under the MIT License
@@ -45,17 +45,8 @@
   // =========================================================================================== //
 
   var Helpers = {
-    insertAfter(newNode, element) {
-      element.parentNode.insertBefore(newNode, element.nextSibling);
-    },
     html(element, content) {
       element.innerHTML = content;
-    },
-    removeNode(element) {
-      element.parentNode.removeChild(element);
-    },
-    exists(selector) {
-      return doc.querySelectorAll(selector).length > 0;
     },
     isBoolean(obj) {
       return toString.call(obj) === '[object Boolean]';
@@ -243,16 +234,16 @@
   var UserInterface = Extend(ErrorMethods, {
     init() {
       if (this.options.validateOnChange)
-        this.options.formElement.addEventListener('change', this.boundOnChangeHandler, false);
+        this.options.formElement.addEventListener('change', this.eventHandlers.onChange, false);
       if (this.options.formElement)
-        this.options.formElement.addEventListener('submit', this.boundOnSubmitHandler, false);
+        this.options.formElement.addEventListener('submit', this.eventHandlers.onSubmit, false);
     },
 
     destroy() {
       if (this.options.validateOnChange)
-        this.options.formElement.removeEventListener('change', this.boundOnChangeHandler, false);
+        this.options.formElement.removeEventListener('change', this.eventHandlers.onChange, false);
       if (this.options.formElement)
-        this.options.formElement.removeEventListener('submit', this.boundOnSubmitHandler, false);
+        this.options.formElement.removeEventListener('submit', this.eventHandlers.onSubmit, false);
     },
 
     onSubmitHandler(event) {
@@ -260,7 +251,7 @@
       this.validateRequiredFields((data) => {
         if (this.isFunction(this.options.onSubmitHandler)) {
           this.options.onSubmitHandler(event, data, this.options.formElement)
-        } else {
+        } else if (!this.options.debug) {
           this.options.formElement.submit();
         }
         if (this.options.resetFormOnSubmit) this.options.formElement.reset();
@@ -414,20 +405,21 @@
   // Validate Manager
   // =========================================================================================== //
 
-  function setupValidateManager(config) {
-    var instance = Object.create(ValidateManagers);
+  function setupValidateManager(...args) {
+    var context = Object.create(ValidateManagers);
 
     // Set default options
     var defaults = {
       onSubmitHandler: null,
       onChangeHandler: null,
-      formElement: null,
+      formName: null,
       validateOnChange: true,
-      resetFormOnSubmit: true
+      resetFormOnSubmit: true,
+      debug: false
     };
 
     // Set error messages
-    instance.errorMessages = {
+    context.errorMessages = {
       lettersOnly: 'Please use letters only.',
       email: 'Please enter a valid email address.',
       equalTo: 'Please enter the same value.',
@@ -439,23 +431,55 @@
     };
 
     // Store form state
-    instance.form = {
+    context.form = {
       validationList: [],
       errorCollection: []
     };
 
     // Setup event handlers
-    instance.boundOnChangeHandler = instance.onChangeHandler.bind(instance);
-    instance.boundOnSubmitHandler = instance.onSubmitHandler.bind(instance);
+    context.eventHandlers = {
+      onChange: context.onChangeHandler.bind(context),
+      onSubmit: context.onSubmitHandler.bind(context)
+    };
+
+    var config = parseArguments.call(context, args);
 
     // Setup and merge options
-    if (instance.isObject(config)) {
-      instance.options = Object.assign(defaults, config);
-      instance.options.formName = instance.options.formElement;
-      instance.options.formElement = doc.forms[instance.options.formElement];
+    if (context.isObject(config)) {
+      context.options = Object.assign(defaults, config);
+      context.options.formElement = doc.forms[context.options.formName];
     }
 
-    return instance;
+    return context;
+  }
+
+  function parseArguments(args) {
+    var result = {};
+    if (args.length === 0) {
+      throw new Error("Form name or config object is required");
+    }
+
+    else if (args.length === 1) {
+      var formConfig = args[0];
+      if (this.isString(formConfig)) {
+        result.formName = formConfig;
+      } else if (this.isObject(formConfig)) {
+        Object.assign(result, formConfig);
+      } else {
+        throw new Error(`"${formConfig}" Not a valid string or an object.`);
+      }
+    }
+
+    else if (args.length === 2) {
+      var formName = args[0];
+      var configObj = args[1];
+      if (!this.isString(formName)) throw new Error(`"${formName}" Should be a string`);
+      if (!this.isObject(configObj)) throw new Error(`"${configObj}" Should be an object`);
+      configObj.formName = formName;
+      Object.assign(result, configObj);
+    }
+
+    return result;
   }
 
   var ValidateManagers = Extend(UserInterface, {
@@ -471,8 +495,8 @@
       }
     },
 
-    addMethod(ruleName, method, message='', overwrite=false) {
-      if (overwrite || !hasOwn.call(this, ruleName)) {
+    addMethod(ruleName, method, message='') {
+      if (!hasOwn.call(this, ruleName)) {
         this[ruleName] = method;
         this.errorMessages[ruleName] = message;
       } else {
