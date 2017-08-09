@@ -8,10 +8,11 @@ http://hassanhibbert.com/validate-manager/
 
 [Download Project Files Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip)
 
-Or download from npm 
+This project is also available on npm.  
+
 `npm install validate-manager --save`
 
-Load the script into your page. Set the `formElement` property to the forms name property. Then call the `validate` method. 
+Load the script into your page. Add a `data-vm` validate attribute to your form element (List of attribute methods below). Pass the form name to `ValidateManager('formname')`. Then call the `validate` method. 
 
 Sample styles for error messages can be found in the demo/css directory of the project.
 
@@ -23,8 +24,7 @@ Sample styles for error messages can be found in the demo/css directory of the p
 </form>
 <script src="validate.manager.js"></script>
 <script>
-  var myform = ValidateManager({ formElement: 'myform' });
-  myform.validate();
+  ValidateManager('myform').validate();
 </script>
 ```
 
@@ -47,8 +47,7 @@ The below table displays all of the default validation methods built into `Valid
 ##### - Input (lettersOnly and required)
 Using the attribute `data-vm-required="true"` and `data-vm-letters-only="true">` will make the input field required and the value to be validated for alphabetic letters only.
 ```html
-<input name="fullname" 
-       type="text" 
+<input name="fullname" type="text" 
        data-vm-required="true" 
        data-vm-letters-only="true">
 ```
@@ -70,41 +69,59 @@ When validating a group such as checkboxes or radio buttons. Only the first form
 <input type="checkbox" name="newsletter" id="photography" value="photography"/>
 ```
 
-### ValidateManager() - Configuration
-`ValidateManager` accepts a config object with options.
-
-Function signature: `ValidateManager(configObject)`
+### ValidateManager() - Config Options
 
 | Property | Type | Description |
 |--------|------|------------|
-| `formElement` | `String` | Name of the form. Required. | 
-| `onSubmitHandler` | `Function` | Callback function for form submissions| 
+| `formName` | `String` | Name of the form. Required. | 
+| `onSubmitHandler` | `Function` | Callback function for form submissions. | 
+| `debug` | `Boolean` | This will prevent the form from being submitted. Default `false`| 
 | `validateOnChange` | `Boolean` | Flag for validating when onChange is triggered. Default `true`| 
 | `resetFormOnSubmit` | `Boolean` | Flag for resetting the form when onSubmit is triggered and form  is valid. Default `true`| 
 
-##### Example - ValidateManager(config)
-```javascript
-var config = {
-  formElement: 'sampleFormName',
-  onSubmitHandler: function (event, data, form) {},
-  validateOnChange: true,
-  resetFormOnSubmit: true
-};
+There are three ways you can define `ValidateManager`.
 
-var sampleForm = ValidateManager(config);
-sampleForm.validate();
+##### Example - #1 ValidateManager(formName)
+This the simplest way to define the `ValidateManager`.
+```javascript
+ValidateManager('formname').validate();
 ```
 
-#### Example - onSubmitHandler 
+##### Example - #2 ValidateManager(formName, config)
+This is where you can add a second argument which would be the config options.
 
 ```javascript
-var config = {
+
+var form = ValidateManager('formname', {
+  // config options here...
+});
+
+form.validate();
+```
+
+##### Example - #3 ValidateManager(config)
+This is where you can just pass in one config object. Make sure to assign the form name to the property `formName`.
+```javascript
+var form = ValidateManager({
+  formName: 'formname',
+  // config options here...
+});
+
+form.validate();
+```
+
+#### Example - Config options `onSubmitHandler` 
+
+```javascript
+var form = ValidateManager('formname', {
   onSubmitHandler: function (event, data, form) {
     // form.submit();
     // Submit form or process the `data` object
     // You can include your own Ajax calls within here as well
   }
-};
+});
+
+form.validate();
 ````
 
 **onSubmitHandler** callback function arguments
@@ -113,7 +130,7 @@ var config = {
 2. **data**
     - An object containing the values of the form
 3. **form**
-    - The current HTML form element 
+    - The main form element 
 
 ### Methods
 
@@ -135,9 +152,9 @@ Function signature: `.validate(options)`
 </form>
 
 <script>
-  var myform = ValidateManager({ formElement: 'myform' });
+  var form = ValidateManager('myform');
   
-  myform.validate({
+  form.validate({
     'confirm-email': {
       message: { 
         equalTo: 'Email address does not match',
@@ -157,10 +174,10 @@ Function signature: `.validate(options)`
 </form>
 
 <script>
-  var myform = ValidateManager({ formElement: 'myform' });
+  var form = ValidateManager('myform');
   
-  // set rules
-  var options = {
+  // set validation rules
+  form.validate({
     'firstname': {
       rules: { required: true, lettersOnly: true, minlength: 2 }
     },
@@ -170,10 +187,7 @@ Function signature: `.validate(options)`
     'email': {
       rules: { email: true, required: true }
     }
-  };
-  
-  // pass to validate method
-  myform.validate(options);
+  });
 </script>
 
 ```
@@ -190,11 +204,12 @@ Function signature: `.destroy()`
 </form>
 
 <script>
-  var myform = ValidateManager({ formElement: 'myform' });
-  myform.validate();
+  var form = ValidateManager('myform');
+  form.validate();
   
-  // sometime later
-  myform.destroy();
+  // Sometime later in the application when you need to
+  // clean up some event handlers.
+  form.destroy();
 </script>
 
 ```
@@ -202,7 +217,7 @@ Function signature: `.destroy()`
 #### .addMethod()
 With `addMethod()` you are able to add your own custom method for validation.
 
-*Note: When creating a method name that is camel case `.addMethod('exampleMethod', function(){}, 'message')` use Kebab Case when implementing html attributes `data-vm-example-method="true"`*
+*Note: When creating a method name that is camel case `.addMethod('exampleMethod'...)` use Kebab Case when implementing html attributes `data-vm-example-method="true"`*
 
 Function signature: `.addMethod(methodName, callback, errorMessage);`
 1. **methodName**
@@ -226,13 +241,13 @@ Function signature: `.addMethod(methodName, callback, errorMessage);`
 </form>
 
 <script>
-  var myform = ValidateManager({ formElement: 'myform' });
+  var form = ValidateManager('myform');
   
-  myform.addMethod('isFive', function (value1, value2, formElement) {
+  form.addMethod('isFive', function (value1, value2, formElement) {
     return parseInt(value1) === 5;
   }, 'Not equal to 5.');
   
-  myform.validate();
+  form.validate();
 </script>
 
 ```
