@@ -178,4 +178,16 @@ QUnit.test("Error Handling: validate() called with argument that is not an objec
   form1.destroy();
 });
 
+QUnit.test("addMethod() add custom method - testing if method is added", function (assert) {
+  var form2 = ValidateManager('form2');
+
+  form2.addMethod('customMethod', function () {
+    return true;
+  }, 'This is my custom message');
+
+  form2.validate();
+  assert.equal(typeof form2['customMethod'], 'function', 'custom method should be added');
+  form2.destroy();
+});
+
 
