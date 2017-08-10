@@ -119,7 +119,7 @@ ValidateManager Usage
 There are three ways you can setup `ValidateManager()`.
 
 ##### Example - #1 ValidateManager(formName)
-This the simplest way.
+This is the simplest way.
 ```javascript
 ValidateManager('formname').validate();
 ```
