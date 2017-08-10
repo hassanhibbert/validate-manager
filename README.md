@@ -23,7 +23,9 @@ First make sure you have installed the latest version of [node.js](http://nodejs
 
  Use the command line below to install
 
-`npm install validate-manager`
+```shell
+npm install validate-manager
+```
 
 Setup
 ---
@@ -50,7 +52,7 @@ HTML Attributes
 ---
 The below table displays all of the default attribute validation rules.
 
-| Attribute        | Type     | Description |  Method Used
+| Attribute        | Type     | Description |  Method
 |:------------- |:------------- |:------------ |:--------------
 | `data-vm-letters-only="true"` | `Boolean` | Test for valid alphabetic characters | `lettersOnly`
 | `data-vm-required="true"` | `Boolean` | Test if the form field has a value | `required`
@@ -66,9 +68,7 @@ HTML Attributes - Usage
 ##### Input (lettersOnly and required)
 Using the attribute `data-vm-required="true"` and `data-vm-letters-only="true">` will make the input field required and the value to be validated for alphabetic letters only.
 ```html
-<input name="fullname" type="text" 
-       data-vm-required="true" 
-       data-vm-letters-only="true">
+<input name="fullname" type="text" data-vm-required="true" data-vm-letters-only="true">
 ```
 ##### Input (email)
 Using the attribute `data-vm-email="true"` will validate input for a valid email address.
@@ -116,7 +116,7 @@ ValidateManager - config options structure
 
 ValidateManager Usage
 ---
-There are three ways you can use `ValidateManager()`.
+There are three ways you can setup `ValidateManager()`.
 
 ##### Example - #1 ValidateManager(formName)
 This the simplest way.
@@ -162,16 +162,15 @@ form.validate();
 ````
 
 **onSubmitHandler** callback function arguments
-1. **event**
+- **event** 
     - The onSubmit event object
-2. **data**
+- **data**
     - An object containing the values of the form
-3. **form**
+- **form**
     - The main form element 
 
 Methods
 ---
-
 
 #### .validate(options)
 The `validate` method kicks off the initialization of the form. Validate options can be used to programmatically set validation rules or create custom error messaging.
@@ -290,10 +289,12 @@ With `addMethod()` you are able to add your own custom method for validation.
 </script>
 ```
 
-`.addMethod(methodName, callback, errorMessage)`
-1. **methodName**
+```javascript
+.addMethod(methodName, callback, errorMessage);
+```
+- **methodName**
   - The name of your custom method
-2. **callback**
+- **callback**
   - Function used to test a value, taking three arguments:
     - **value1**
       - The value from the form field
@@ -302,7 +303,7 @@ With `addMethod()` you are able to add your own custom method for validation.
       - Example `data-vm-minlength="5"` or `rules: { minlength: 5 }`. `value2` will be **5**.
     - **formElement**
       - The main form element.
-3. **errorMessage**
+- **errorMessage**
     - The error message what will be displayed when validation fails
 
 
