@@ -73,7 +73,7 @@ Using the attribute `data-vm-required="true"` and `data-vm-letters-only="true">`
 ##### Input (email)
 Using the attribute `data-vm-email="true"` will validate input for a valid email address.
 ```html
-<input name="email" type="text" data-vm-email="true" >
+<input name="email" type="text" data-vm-email="true">
 ```
 
 ##### Input Checkbox (required and minlength)
