@@ -290,7 +290,6 @@ With `addMethod()` you are able to add your own custom method for validation.
 ```
 Details about the callback arguments 
 
-```
 - **methodName**
   - The name of your custom method
 - **callback**
