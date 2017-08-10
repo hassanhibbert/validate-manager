@@ -172,7 +172,7 @@ form.validate();
 Methods
 ---
 
-#### .validate(options)
+### .validate(options)
 The `validate` method kicks off the initialization of the form. Validate options can be used to programmatically set validation rules or create custom error messaging.
 
 ##### options structure
@@ -248,7 +248,7 @@ The `validate` method kicks off the initialization of the form. Validate options
 
 ```
 
-#### .destroy()
+### .destroy()
 The `destroy` method would be useful for single page applications when the events would need to be cleaned up during the destroy phase of the app.
 
 ##### Example
@@ -268,7 +268,7 @@ The `destroy` method would be useful for single page applications when the event
 
 ```
 
-#### .addMethod(methodName, callback, errorMessage)
+### .addMethod(methodName, callback, errorMessage)
 With `addMethod()` you are able to add your own custom method for validation.
 
 **Note**: When creating a method name that is camel case `.addMethod('exampleMethod'...)` use Kebab Case when implementing html attributes `data-vm-example-method="true"`
