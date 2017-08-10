@@ -190,4 +190,25 @@ QUnit.test("addMethod() add custom method - testing if method is added", functio
   form2.destroy();
 });
 
+QUnit.test("addMethod() add custom method - testing if error message was added", function (assert) {
+  var form2 = ValidateManager('form2');
+
+  form2.addMethod('customMethod', function () {
+    return true;
+  }, 'This is my custom message');
+
+  form2.validate();
+  assert.equal(
+    typeof form2.errorMessages['customMethod'],
+    'string',
+    'custom error message should be a string'
+  );
+  assert.equal(
+    form2.errorMessages['customMethod'],
+    'This is my custom message',
+    'custom error message should be added to the error message object'
+  );
+  form2.destroy();
+});
+
 
