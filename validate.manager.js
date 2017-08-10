@@ -1,7 +1,7 @@
 /**
  * @preserve
  * ValidateManager: A JavaScript form validator
- * Version: 1.0.9
+ * Version: 1.0.10
  * Author: Hassan Hibbert <http://hassanhibbert.com/>
  * Github: https://github.com/hassanhibbert/validate-manager
  * Copyright 2016-2017 Hassan Hibbert, under the MIT License
