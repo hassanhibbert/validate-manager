@@ -92,12 +92,13 @@ ValidateManager - config options
 ---
 
 | Property | Type | Default | Description |
-|--------|------|-----|-------|
+|:--------|:------|:-----|:-------|
 | `formName` | `String` | `null` | Pass the name of the form to this property. | 
-| `onSubmitHandler` | `Function` | `null`| Callback function for form submissions. | 
+| `onChangeHandler` | `Function` | `null`| Callback for when a onchange event is triggered. | 
+| `onSubmitHandler` | `Function` | `null`| Callback for when a onsubmit event is triggered. | 
 | `debug` | `Boolean` | `false` | This will prevent the form from being submitted.| 
 | `validateOnChange` | `Boolean` | `true`|Flag for validating when onChange is triggered.| 
-| `resetFormOnSubmit` | `Boolean` | `true`| Flag for resetting the form when onSubmit is triggered and form  is valid.| 
+| `resetFormOnSubmit` | `Boolean` | `true`| Flag for resetting the form when onsubmit is triggered and form is valid.| 
 
 ValidateManager - config options structure
 ---
