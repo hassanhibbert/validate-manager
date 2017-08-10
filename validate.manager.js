@@ -1,7 +1,7 @@
 /**
  * @preserve
  * ValidateManager: A JavaScript form validator
- * Version: 1.0.10
+ * Version: 1.0.11
  * Author: Hassan Hibbert <http://hassanhibbert.com/>
  * Github: https://github.com/hassanhibbert/validate-manager
  * Copyright 2016-2017 Hassan Hibbert, under the MIT License
@@ -445,10 +445,10 @@
     var config = parseArguments.call(context, args);
 
     // Setup and merge options
-    if (context.isObject(config)) {
-      context.options = Object.assign(defaults, config);
-      context.options.formElement = doc.forms[context.options.formName];
-    }
+    context.options = Object.assign(defaults, config);
+    context.options.formElement = doc.forms[context.options.formName];
+    if (!context.options.formElement) throw new Error('Could not find a form element');
+
 
     return context;
   }
@@ -466,15 +466,15 @@
       } else if (this.isObject(formConfig)) {
         Object.assign(result, formConfig);
       } else {
-        throw new Error(`"${formConfig}" Not a valid string or an object.`);
+        throw new Error('Not a valid string or an object.');
       }
     }
 
     else if (args.length === 2) {
       var formName = args[0];
       var configObj = args[1];
-      if (!this.isString(formName)) throw new Error(`"${formName}" Should be a string`);
-      if (!this.isObject(configObj)) throw new Error(`"${configObj}" Should be an object`);
+      if (!this.isString(formName)) throw new Error('First argument should be a string.');
+      if (!this.isObject(configObj)) throw new Error('Second argument should be an object.');
       configObj.formName = formName;
       Object.assign(result, configObj);
     }
@@ -484,15 +484,12 @@
 
   var ValidateManagers = Extend(UserInterface, {
     validate(validationRulesJs={}) {
-      if (this.options.formElement) {
-        var validationRulesDOM = this.getValidationRulesFromDOM(this.options.formElement);
-        var validationRuleList = this.mergeRules(validationRulesJs, validationRulesDOM);
-        this.form.validationList = this.updateList(validationRuleList);
-        this.buildErrorPlaceholders();
-        this.init();
-      } else {
-        throw new Error(`Could not find a form element with the name "${this.options.formName}"`);
-      }
+      if (!this.isObject(validationRulesJs)) throw new Error('The argument passed to the validate method is not an object.');
+      var validationRulesDOM = this.getValidationRulesFromDOM(this.options.formElement);
+      var validationRuleList = this.mergeRules(validationRulesJs, validationRulesDOM);
+      this.form.validationList = this.updateList(validationRuleList);
+      this.buildErrorPlaceholders();
+      this.init();
     },
 
     addMethod(ruleName, method, message='') {

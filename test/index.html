@@ -10,9 +10,9 @@
 <div id="qunit"></div>
 <div id="qunit-fixture">
 
-    <form name="form1" action="">
-        <input name="firstName" type="text">
-        <input name="lastName" type="text">
+    <form name="form1">
+        <input name="firstName" type="text" data-vm-letters-only="true">
+        <input name="lastName" type="text" data-vm-letters-only="true">
     </form>
 
     <form name="form2">
@@ -38,7 +38,7 @@
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
-<script src="../validateManager.js"></script>
+<script src="../dist/validate.manager.min.js"></script>
 <script src="tests.js"></script>
 </body>
 </html>
