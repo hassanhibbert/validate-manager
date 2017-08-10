@@ -288,9 +288,9 @@ With `addMethod()` you are able to add your own custom method for validation.
   form.validate();
 </script>
 ```
-
+Details about the callback arguments
 ```javascript
-.addMethod(methodName, callback, errorMessage);
+.addMethod(methodName, callback, errorMessage)
 ```
 - **methodName**
   - The name of your custom method
