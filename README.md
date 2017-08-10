@@ -10,7 +10,11 @@ Download project
 ---
 If you wish to download the latest project you can use the link below.
 
-[Download Project Files Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip)
+> [Download Project Here](https://github.com/hassanhibbert/validate-manager/archive/master.zip)
+
+Or get specific files.
+
+> You can download the [styles](https://raw.githubusercontent.com/hassanhibbert/validate-manager/master/demo/css/styles.css) and the [minified version](https://raw.githubusercontent.com/hassanhibbert/validate-manager/master/dist/validate.manager.min.js) of ValidateManager.
 
 NPM Install
 ---
