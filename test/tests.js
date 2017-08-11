@@ -190,6 +190,19 @@ QUnit.test("addMethod() add custom method - testing if method is added", functio
   form2.destroy();
 });
 
+QUnit.test("addMethod() add custom method - testing method with arguments", function (assert) {
+  var form2 = ValidateManager('form2');
+  form2.addMethod('greaterThan', function (value1, value2, form) {
+    return value1 > value2;
+  }, 'This is my custom message');
+
+  form2.validate();
+
+  assert.equal(form2['greaterThan'](10, 5), true, 'should be true');
+  assert.equal(form2['greaterThan'](3, 5), false, 'should be false');
+  form2.destroy();
+});
+
 QUnit.test("addMethod() add custom method - testing if method returns a boolean", function (assert) {
   var form2 = ValidateManager('form2');
 
