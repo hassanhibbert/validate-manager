@@ -183,7 +183,7 @@
         var element = mainForm[elementName];
         return (value === element.value);
       } else {
-        throw new Error(`Could not find a form element with the name "${elementName}"`);
+        throw new Error(`equalTo(): Could not find a form element with the name "${elementName}"`);
       }
     },
     email(email) {
@@ -282,7 +282,6 @@
         var selectedValidateMethod = this[ruleName].bind(this);
         var value1 = this.isNodeList(validateItem.element) ? validateItem.element : validateItem.element.value;
         var value2 = validateItem.rules[ruleName];
-        if (!this.isFunction(selectedValidateMethod)) throw new Error(`"${ruleName}" is not a valid rule.`);
         var validationPassed = validateItem.rules[ruleName] && selectedValidateMethod(value1, value2, this.options.formElement);
 
         validationPassed
@@ -447,7 +446,7 @@
     // Setup and merge options
     context.options = Object.assign(defaults, config);
     context.options.formElement = doc.forms[context.options.formName];
-    if (!context.options.formElement) throw new Error('Could not find a form element');
+    if (!context.options.formElement) throw new Error('ValidateManager(): Could not find a form element.');
 
 
     return context;
@@ -456,7 +455,7 @@
   function parseArguments(args) {
     var result = {};
     if (args.length === 0) {
-      throw new Error("Form name or config object is required");
+      throw new Error("ValidateManager(): Form name or config object is required.");
     }
 
     else if (args.length === 1) {
@@ -466,7 +465,7 @@
       } else if (this.isObject(formConfig)) {
         Object.assign(result, formConfig);
       } else {
-        throw new Error('Not a valid string or an object.');
+        throw new Error('ValidateManager(): First argument is not a valid string or object.');
       }
     }
 
@@ -493,14 +492,13 @@
     },
 
     addMethod(ruleName, method, message='') {
-      if (!hasOwn.call(this, ruleName))
+      if (hasOwn.call(this, ruleName))
         throw new Error(`addMethod(): "${ruleName}" method name is already use.`);
       if (!this.isFunction(method))
         throw new Error('addMethod(): Second argument should be a function.');
-      if (!this.isString(method))
+      if (!this.isString(message))
         throw new Error('addMethod(): Third argument should be a string.');
 
-      // Set custom method
       this[ruleName] = method;
       this.errorMessages[ruleName] = message;
     }
