@@ -473,8 +473,8 @@
     else if (args.length === 2) {
       var formName = args[0];
       var configObj = args[1];
-      if (!this.isString(formName)) throw new Error('First argument should be a string.');
-      if (!this.isObject(configObj)) throw new Error('Second argument should be an object.');
+      if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
+      if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
       configObj.formName = formName;
       Object.assign(result, configObj);
     }
@@ -484,7 +484,7 @@
 
   var ValidateManagers = Extend(UserInterface, {
     validate(validationRulesJs={}) {
-      if (!this.isObject(validationRulesJs)) throw new Error('The argument passed to the validate method is not an object.');
+      if (!this.isObject(validationRulesJs)) throw new Error('validate(): The argument passed to this method must be an object.');
       var validationRulesDOM = this.getValidationRulesFromDOM(this.options.formElement);
       var validationRuleList = this.mergeRules(validationRulesJs, validationRulesDOM);
       this.form.validationList = this.updateList(validationRuleList);
@@ -493,12 +493,16 @@
     },
 
     addMethod(ruleName, method, message='') {
-      if (!hasOwn.call(this, ruleName)) {
-        this[ruleName] = method;
-        this.errorMessages[ruleName] = message;
-      } else {
-        throw new Error(`Method '${ruleName}' is already use.`);
-      }
+      if (!hasOwn.call(this, ruleName))
+        throw new Error(`addMethod(): "${ruleName}" method name is already use.`);
+      if (!this.isFunction(method))
+        throw new Error('addMethod(): Second argument should be a function.');
+      if (!this.isString(method))
+        throw new Error('addMethod(): Third argument should be a string.');
+
+      // Set custom method
+      this[ruleName] = method;
+      this.errorMessages[ruleName] = message;
     }
   });
 
