@@ -29,7 +29,7 @@ QUnit.test("Call with a valid form name", function (assert) {
 QUnit.test("Error Handling: Call with a form name that does not exists", function (assert) {
   assert.throws(
     block(ValidateManager, 'formNameThatDoesNotExist'),
-    expected('message', 'Could not find a form element'),
+    expected('message', 'ValidateManager(): Could not find a form element.'),
     'Raised error when ValidateManager is called a form name that doesn\'t exist'
   );
 });
@@ -37,7 +37,7 @@ QUnit.test("Error Handling: Call with a form name that does not exists", functio
 QUnit.test("Error Handling: Call with an array", function (assert) {
   assert.throws(
     block(ValidateManager, [[]]),
-    expected('message', 'Not a valid string or an object.'),
+    expected('message', 'ValidateManager(): First argument is not a valid string or object.'),
     'Raised error when ValidateManager is called with an array'
   );
 });
@@ -45,7 +45,7 @@ QUnit.test("Error Handling: Call with an array", function (assert) {
 QUnit.test("Error Handling: Call with no arguments", function (assert) {
   assert.throws(
     block(ValidateManager),
-    expected('message','Form name or config object is required'),
+    expected('message','ValidateManager(): Form name or config object is required.'),
     'Raised error when ValidateManager is called with no arguments'
   );
 });
@@ -53,7 +53,7 @@ QUnit.test("Error Handling: Call with no arguments", function (assert) {
 QUnit.test("Error Handling: Call with undefined", function (assert) {
   assert.throws(
     block(ValidateManager, undefined),
-    expected('message', 'Not a valid string or an object.'),
+    expected('message', 'ValidateManager(): First argument is not a valid string or object.'),
     'Raised error when ValidateManager is called with undefined'
   );
 });
@@ -61,7 +61,7 @@ QUnit.test("Error Handling: Call with undefined", function (assert) {
 QUnit.test("Error Handling: Call with an empty object", function (assert) {
   assert.throws(
     block(ValidateManager, {}),
-    expected('message', 'Could not find a form element'),
+    expected('message', 'ValidateManager(): Could not find a form element.'),
     'Raised error when ValidateManager is called with an empty object'
   );
 });
@@ -69,7 +69,7 @@ QUnit.test("Error Handling: Call with an empty object", function (assert) {
 QUnit.test("Error Handling: Call with a number", function (assert) {
   assert.throws(
     block(ValidateManager, 5),
-    expected('message', 'Not a valid string or an object.'),
+    expected('message', 'ValidateManager(): First argument is not a valid string or object.'),
     'Raised error when ValidateManager is called with a number'
   );
 });
@@ -120,7 +120,7 @@ QUnit.test("Call with an object that has a valid form name assigned to the prope
 QUnit.test("Error Handling: Call with an object that form name that does not exists assigned to the property formName", function (assert) {
   assert.throws(
     block(ValidateManager, { formName: 'formNameThatDoesNotExist' }),
-    expected('message', 'Could not find a form element'),
+    expected('message', 'ValidateManager(): Could not find a form element.'),
     'Raised error when ValidateManager is called a form name that doesn\'t exist'
   );
 });
@@ -128,7 +128,7 @@ QUnit.test("Error Handling: Call with an object that form name that does not exi
 QUnit.test("Error Handling: Call with an object that has an incorrect property name", function (assert) {
   assert.throws(
     block(ValidateManager, { formNamee: 'formNameThatDoesNotExist' }),
-    expected('message', 'Could not find a form element'),
+    expected('message', 'ValidateManager(): Could not find a form element.'),
     'Raised error when ValidateManager is called a form name that doesn\'t exist'
   );
 });
@@ -136,14 +136,14 @@ QUnit.test("Error Handling: Call with an object that has an incorrect property n
 QUnit.test("Error Handling: Call with two arguments and when the second argument is an array", function (assert) {
   assert.throws(
     block(ValidateManager, 'form1', []),
-    expected('message', 'Second argument should be an object.'),
+    expected('message', 'ValidateManager(): Second argument should be an object.'),
     'Raised error when ValidateManager is called with a second argument of array');
 });
 
 QUnit.test("Error Handling: Call with two arguments and when the first argument is an array", function (assert) {
   assert.throws(
     block(ValidateManager, [], []),
-    expected('message', 'First argument should be a string.'),
+    expected('message', 'ValidateManager(): First argument should be a string.'),
     'Raised error when ValidateManager is called with a first argument of array'
   );
 });
@@ -172,7 +172,7 @@ QUnit.test("Error Handling: validate() called with argument that is not an objec
   var form1 = ValidateManager('form1');
   assert.throws(
     block(form1.validate.bind(form1), 'ohhnooo'),
-    expected('message', 'The argument passed to the validate method is not an object.'),
+    expected('message', 'validate(): The argument passed to this method must be an object.'),
     'Raised error when ValidateManager is called with a first argument of array'
   );
   form1.destroy();
