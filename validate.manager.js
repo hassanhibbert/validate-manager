@@ -35,7 +35,7 @@
   var hasOwn = objProto.hasOwnProperty;
   var doc = document;
 
-  // Creates a new instance of an object
+  // Object creation
   var Extend = function (source, object) {
     return Object.assign(Object.create(source), object);
   };
@@ -83,6 +83,34 @@
         if (element.className != '') className = ' ' + className;
         element.className += className;
       }
+    },
+    parseArguments(args) {
+      var result = {};
+      if (args.length === 0) {
+        throw new Error("ValidateManager(): Form name or config object is required.");
+      }
+
+      else if (args.length === 1) {
+        var formConfig = args[0];
+        if (this.isString(formConfig)) {
+          result.formName = formConfig;
+        } else if (this.isObject(formConfig)) {
+          Object.assign(result, formConfig);
+        } else {
+          throw new Error('ValidateManager(): First argument is not a valid string or object.');
+        }
+      }
+
+      else if (args.length === 2) {
+        var formName = args[0];
+        var configObj = args[1];
+        if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
+        if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
+        configObj.formName = formName;
+        Object.assign(result, configObj);
+      }
+
+      return result;
     },
     getValidationRulesFromDOM(formElements) {
       return [...formElements].reduce((result, formElement) => {
@@ -441,7 +469,7 @@
       onSubmit: context.onSubmitHandler.bind(context)
     };
 
-    var config = parseArguments.call(context, args);
+    var config = this.parseArguments(args);
 
     // Setup and merge options
     context.options = Object.assign(defaults, config);
@@ -450,35 +478,6 @@
 
 
     return context;
-  }
-
-  function parseArguments(args) {
-    var result = {};
-    if (args.length === 0) {
-      throw new Error("ValidateManager(): Form name or config object is required.");
-    }
-
-    else if (args.length === 1) {
-      var formConfig = args[0];
-      if (this.isString(formConfig)) {
-        result.formName = formConfig;
-      } else if (this.isObject(formConfig)) {
-        Object.assign(result, formConfig);
-      } else {
-        throw new Error('ValidateManager(): First argument is not a valid string or object.');
-      }
-    }
-
-    else if (args.length === 2) {
-      var formName = args[0];
-      var configObj = args[1];
-      if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
-      if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
-      configObj.formName = formName;
-      Object.assign(result, configObj);
-    }
-
-    return result;
   }
 
   var ValidateManagers = Extend(UserInterface, {
