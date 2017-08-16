@@ -176,9 +176,7 @@
     mergeRules(validationRulesJs, validationRulesDOM) {
       var mergedRules = deepmerge(validationRulesDOM, validationRulesJs);
       var ruleNames = ObjectKeys(mergedRules);
-      return ruleNames.map(ruleName => {
-        return mergedRules[ruleName];
-      });
+      return ruleNames.map(ruleName => mergedRules[ruleName]);
     },
   };
 
