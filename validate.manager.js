@@ -74,6 +74,8 @@
     flatten(array) {
       return [].concat(...array);
     },
+
+    // TODO  replace removeClass and addClass method with native js method 'classList'
     removeClass(element, className) {
       if (element.className.indexOf(className) != -1) {
         var rxp = new RegExp('(\\s|^)' + className + '(\\s|$)');
@@ -142,7 +144,8 @@
         if (attribute.name.indexOf(prefix) >= 0) {
           var strippedPrefix = attribute.name.replace(prefix, '');
           var method = this.camelCase(strippedPrefix, '-');
-          var attributeValue = attribute.value.indexOf("'") >= 0
+          var foundSingleQuote =  attribute.value.indexOf("'") >= 0
+          var attributeValue = foundSingleQuote
             ? attribute.value.replace(/[\/']/g, "\"")
             : attribute.value;
 
@@ -477,7 +480,6 @@
     context.options = ObjectAssign(defaults, config);
     context.options.formElement = doc.forms[context.options.formName];
     if (!context.options.formElement) throw new Error('ValidateManager(): Could not find a form element.');
-
 
     return context;
   }
