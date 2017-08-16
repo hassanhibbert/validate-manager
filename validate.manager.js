@@ -472,7 +472,7 @@
       onSubmit: context.onSubmitHandler.bind(context)
     };
 
-    var config = this.parseArguments(args);
+    var config = context.parseArguments(args);
 
     // Setup and merge options
     context.options = ObjectAssign(defaults, config);
