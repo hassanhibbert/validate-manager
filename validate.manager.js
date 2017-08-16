@@ -39,7 +39,7 @@
 
   // Object creation
   var Extend = function (source, object) {
-    return Object.assign(Object.create(source), object);
+    return ObjectAssign(Object.create(source), object);
   };
 
   // =========================================================================================== //
@@ -97,7 +97,7 @@
         if (this.isString(formConfig)) {
           result.formName = formConfig;
         } else if (this.isObject(formConfig)) {
-          Object.assign(result, formConfig);
+          ObjectAssign(result, formConfig);
         } else {
           throw new Error('ValidateManager(): First argument is not a valid string or object.');
         }
@@ -109,7 +109,7 @@
         if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
         if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
         configObj.formName = formName;
-        Object.assign(result, configObj);
+        ObjectAssign(result, configObj);
       }
 
       return result;
@@ -348,7 +348,7 @@
         .map((validateItem, index) => {
 
           // Add unique ids & HTML elements
-          Object.assign(validateItem, {
+          ObjectAssign(validateItem, {
             id: `${index}-${this.options.formName}`,
             element: this.options.formElement[validateItem.fieldName],
           });
@@ -357,7 +357,7 @@
           var hasRules = hasOwn.call(validateItem, 'rules');
           var isRequired = hasOwn.call(validateItem, 'required');
           if (!hasRules) validateItem.rules = {};
-          if (isRequired) Object.assign(validateItem.rules, {required: validateItem.required});
+          if (isRequired) ObjectAssign(validateItem.rules, {required: validateItem.required});
 
           // Add error messages
           var ruleNames = ObjectKeys(validateItem.rules);
@@ -474,7 +474,7 @@
     var config = this.parseArguments(args);
 
     // Setup and merge options
-    context.options = Object.assign(defaults, config);
+    context.options = ObjectAssign(defaults, config);
     context.options.formElement = doc.forms[context.options.formName];
     if (!context.options.formElement) throw new Error('ValidateManager(): Could not find a form element.');
 
