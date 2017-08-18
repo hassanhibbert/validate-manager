@@ -17,7 +17,7 @@
    * Author: Kyle Mathews
    * MIT License
    */
-  !function(r){function e(r){var e=r&&"object"==typeof r;return e&&"[object RegExp]"!==Object.prototype.toString.call(r)&&"[object Date]"!==Object.prototype.toString.call(r)}function t(r){return Array.isArray(r)?[]:{}}function n(r,n){var o=n&&n.clone===!0;return o&&e(r)?c(t(r),r,n):r}function o(r,t,o){var a=r.slice();return t.forEach(function(t,i){void 0===a[i]?a[i]=n(t,o):e(t)?a[i]=c(r[i],t,o):-1===r.indexOf(t)&&a.push(n(t,o))}),a}function a(r,t,o){var a={};return e(r)&&Object.keys(r).forEach(function(e){a[e]=n(r[e],o)}),Object.keys(t).forEach(function(i){a[i]=e(t[i])&&r[i]?c(r[i],t[i],o):n(t[i],o)}),a}function c(r,e,t){var c=Array.isArray(e),i=t||{arrayMerge:o},u=i.arrayMerge||o;return c?Array.isArray(r)?u(r,e,t):n(e,t):a(r,e,t)}c.all=function(r,e){if(!Array.isArray(r)||r.length<2)throw Error("first argument should be an array with at least two elements");return r.reduce(function(r,t){return c(r,t,e)})},r.deepmerge=r.deepmerge||c}(window);
+  !function(r){function e(r){var e=r&&"object"==typeof r;return e&&"[object RegExp]"!==Object.prototype.toString.call(r)&&"[object Date]"!==Object.prototype.toString.call(r)}function t(r){return Array.isArray(r)?[]:{}}function n(r,n){var o=n&&n.clone===!0;return o&&e(r)?c(t(r),r,n):r}function o(r,t,o){var a=r.slice();return t.forEach(function(t,i){void 0===a[i]?a[i]=n(t,o):e(t)?a[i]=c(r[i],t,o):-1===r.indexOf(t)&&a.push(n(t,o))}),a}function a(r,t,o){var a={};return e(r)&&ObjectKeys(r).forEach(function(e){a[e]=n(r[e],o)}),ObjectKeys(t).forEach(function(i){a[i]=e(t[i])&&r[i]?c(r[i],t[i],o):n(t[i],o)}),a}function c(r,e,t){var c=Array.isArray(e),i=t||{arrayMerge:o},u=i.arrayMerge||o;return c?Array.isArray(r)?u(r,e,t):n(e,t):a(r,e,t)}c.all=function(r,e){if(!Array.isArray(r)||r.length<2)throw Error("first argument should be an array with at least two elements");return r.reduce(function(r,t){return c(r,t,e)})},r.deepmerge=r.deepmerge||c}(window);
 
   // Export module
   if (typeof exports !== 'undefined') {
@@ -30,14 +30,16 @@
   }
 
   // Shortcut variables
+  var ObjectAssign = Object.assign;
+  var ObjectKeys = Object.keys;
   var objProto = Object.prototype;
   var toString = objProto.toString;
   var hasOwn = objProto.hasOwnProperty;
   var doc = document;
 
-  // Creates a new instance of an object
+  // Object creation
   var Extend = function (source, object) {
-    return Object.assign(Object.create(source), object);
+    return ObjectAssign(Object.create(source), object);
   };
 
   // =========================================================================================== //
@@ -72,6 +74,8 @@
     flatten(array) {
       return [].concat(...array);
     },
+
+    // TODO  replace removeClass and addClass method with native js method 'classList'
     removeClass(element, className) {
       if (element.className.indexOf(className) != -1) {
         var rxp = new RegExp('(\\s|^)' + className + '(\\s|$)');
@@ -84,10 +88,38 @@
         element.className += className;
       }
     },
+    parseArguments(args) {
+      var result = {};
+      if (args.length === 0) {
+        throw new Error("ValidateManager(): Form name or config object is required.");
+      }
+
+      else if (args.length === 1) {
+        var formConfig = args[0];
+        if (this.isString(formConfig)) {
+          result.formName = formConfig;
+        } else if (this.isObject(formConfig)) {
+          ObjectAssign(result, formConfig);
+        } else {
+          throw new Error('ValidateManager(): First argument is not a valid string or object.');
+        }
+      }
+
+      else if (args.length === 2) {
+        var formName = args[0];
+        var configObj = args[1];
+        if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
+        if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
+        configObj.formName = formName;
+        ObjectAssign(result, configObj);
+      }
+
+      return result;
+    },
     getValidationRulesFromDOM(formElements) {
       return [...formElements].reduce((result, formElement) => {
         var rule = this.parseAttributes(formElement);
-        var validateObjHasRules = Object.keys(rule).length;
+        var validateObjHasRules = ObjectKeys(rule).length;
         if (validateObjHasRules) {
           if (!hasOwn.call(result, formElement.name)) {
             result[formElement.name] = rule;
@@ -112,7 +144,8 @@
         if (attribute.name.indexOf(prefix) >= 0) {
           var strippedPrefix = attribute.name.replace(prefix, '');
           var method = this.camelCase(strippedPrefix, '-');
-          var attributeValue = attribute.value.indexOf("'") >= 0
+          var foundSingleQuote =  attribute.value.indexOf("'") >= 0
+          var attributeValue = foundSingleQuote
             ? attribute.value.replace(/[\/']/g, "\"")
             : attribute.value;
 
@@ -142,10 +175,8 @@
     },
     mergeRules(validationRulesJs, validationRulesDOM) {
       var mergedRules = deepmerge(validationRulesDOM, validationRulesJs);
-      var ruleNames = Object.keys(mergedRules);
-      return ruleNames.map(ruleName => {
-        return mergedRules[ruleName];
-      });
+      var ruleNames = ObjectKeys(mergedRules);
+      return ruleNames.map(ruleName => mergedRules[ruleName]);
     },
   };
 
@@ -275,7 +306,7 @@
         });
 
       validateItem = this.first(validateItem);
-      var ruleNameList = Object.keys(validateItem.rules);
+      var ruleNameList = ObjectKeys(validateItem.rules);
 
       // Validate each rule
       ruleNameList.some((ruleName) => {
@@ -318,7 +349,7 @@
         .map((validateItem, index) => {
 
           // Add unique ids & HTML elements
-          Object.assign(validateItem, {
+          ObjectAssign(validateItem, {
             id: `${index}-${this.options.formName}`,
             element: this.options.formElement[validateItem.fieldName],
           });
@@ -327,10 +358,10 @@
           var hasRules = hasOwn.call(validateItem, 'rules');
           var isRequired = hasOwn.call(validateItem, 'required');
           if (!hasRules) validateItem.rules = {};
-          if (isRequired) Object.assign(validateItem.rules, {required: validateItem.required});
+          if (isRequired) ObjectAssign(validateItem.rules, {required: validateItem.required});
 
           // Add error messages
-          var ruleNames = Object.keys(validateItem.rules);
+          var ruleNames = ObjectKeys(validateItem.rules);
           validateItem.error = {};
           ruleNames.forEach((name) => {
             var ruleHasErrorMessage = hasOwn.call(validateItem.error, name);
@@ -441,44 +472,14 @@
       onSubmit: context.onSubmitHandler.bind(context)
     };
 
-    var config = parseArguments.call(context, args);
+    var config = context.parseArguments(args);
 
     // Setup and merge options
-    context.options = Object.assign(defaults, config);
+    context.options = ObjectAssign(defaults, config);
     context.options.formElement = doc.forms[context.options.formName];
     if (!context.options.formElement) throw new Error('ValidateManager(): Could not find a form element.');
 
-
     return context;
-  }
-
-  function parseArguments(args) {
-    var result = {};
-    if (args.length === 0) {
-      throw new Error("ValidateManager(): Form name or config object is required.");
-    }
-
-    else if (args.length === 1) {
-      var formConfig = args[0];
-      if (this.isString(formConfig)) {
-        result.formName = formConfig;
-      } else if (this.isObject(formConfig)) {
-        Object.assign(result, formConfig);
-      } else {
-        throw new Error('ValidateManager(): First argument is not a valid string or object.');
-      }
-    }
-
-    else if (args.length === 2) {
-      var formName = args[0];
-      var configObj = args[1];
-      if (!this.isString(formName)) throw new Error('ValidateManager(): First argument should be a string.');
-      if (!this.isObject(configObj)) throw new Error('ValidateManager(): Second argument should be an object.');
-      configObj.formName = formName;
-      Object.assign(result, configObj);
-    }
-
-    return result;
   }
 
   var ValidateManagers = Extend(UserInterface, {
