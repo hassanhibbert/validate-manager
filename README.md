@@ -41,6 +41,7 @@ Sample styles for error messages can be found in the demo/css directory of the p
 ```html
 <form name="myform">
   <input name="field1" data-vm-required="true">
+  <button type="submit">Submit</button>
 </form>
 <script src="validate.manager.js"></script>
 <script>
