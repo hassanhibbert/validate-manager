@@ -130,7 +130,7 @@ This is where you can add a second argument which would be the config options.
 
 ```javascript
 var form = ValidateManager('formname', {
-  // config options here...
+  // config options here
 });
 
 form.validate();
