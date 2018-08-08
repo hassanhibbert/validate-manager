@@ -4,7 +4,7 @@
  * Version: 1.0.12
  * Author: Hassan Hibbert <http://hassanhibbert.com/>
  * Github: https://github.com/hassanhibbert/validate-manager
- * Copyright 2016-2017 Hassan Hibbert, under the MIT License
+ * Copyright 2016-2018 Hassan Hibbert, under the MIT License
  */
 
 
